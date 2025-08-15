@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "../config/firebase";
 import {
   collection,
@@ -10,8 +10,8 @@ import {
 } from "firebase/firestore";
 
 const BookingPage = () => {
-  const roomsCollection = useMemo(() => collection(db, "rooms"), []);
-  const bookingsCollection = useMemo(() => collection(db, "bookings"), []);
+  const roomsCollection = collection(db, "rooms");
+  const bookingsCollection = collection(db, "bookings");
 
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -43,7 +43,7 @@ const BookingPage = () => {
       unsubscribeRooms();
       unsubscribeBookings();
     };
-  }, [roomsCollection, bookingsCollection]);
+  }, []);
 
   // File upload
   const handleFileUpload = (e) => {
