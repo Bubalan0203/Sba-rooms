@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { db } from "../config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 
 const AllBookingsPage = () => {
-  const bookingsCollection = collection(db, "bookings");
+  const bookingsCollection = useMemo(() => collection(db, "bookings"), []);
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
@@ -11,7 +11,7 @@ const AllBookingsPage = () => {
       setBookings(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
     });
     return () => unsubscribe();
-  }, []);
+  }, [bookingsCollection]);
 
   return (
     <div>

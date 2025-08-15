@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { db } from "../config/firebase";
 import {
   collection,
@@ -24,7 +24,7 @@ function RoomsPage() {
   const [deleteModal, setDeleteModal] = useState({ show: false, room: null });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const roomsCollection = collection(db, "rooms"); // This is your Firestore collection
+  const roomsCollection = useMemo(() => collection(db, "rooms"), []); // This is your Firestore collection
 
   // Fetch rooms in real-time
   useEffect(() => {
@@ -37,7 +37,7 @@ function RoomsPage() {
       setLoading(false);
     });
     return unsubscribe;
-  }, []);
+  }, [roomsCollection]);
 
   // Add or update room
   const handleSubmit = async (e) => {
