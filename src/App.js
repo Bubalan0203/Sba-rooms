@@ -1,8 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { ThemeProvider } from "@mui/material/styles";
-import { CssBaseline } from "@mui/material";
-import theme from "./theme/theme";
+import { ThemeProvider } from "./components/ThemeProvider";
 import IntroAnimation from "./components/IntroAnimation";
+import "./index.css";
 
 // Import your pages
 import HomePage from "./pages/HomePage";
@@ -17,16 +16,15 @@ import SideNavbar from "./pages/SideNavbar";
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
+    <ThemeProvider defaultTheme="system" storageKey="sba-ui-theme">
       <IntroAnimation>
         <Router>
-          <div style={styles.appContainer}>
+          <div className="flex min-h-screen bg-background">
             {/* The SideNavbar is outside the Routes, so it's always visible */}
             <SideNavbar />
 
             {/* The main content area where pages will be rendered */}
-            <main style={styles.mainContent}>
+            <main className="flex-1 overflow-auto">
               <Routes>
                 {/* Add a default route to redirect to the home page */}
     
@@ -44,21 +42,5 @@ function App() {
     </ThemeProvider>
   );
 }
-
-// --- Styles for the layout ---
-const styles = {
-  appContainer: {
-    display: 'flex',
-    flexDirection: 'row',
-    minHeight: '100vh',
-    backgroundColor: '#f8fafc',
-  },
-  mainContent: {
-    flex: 1, // Takes up the remaining space
-    padding: 0,
-    backgroundColor: '#f8fafc',
-    overflow: 'auto',
-  },
-};
 
 export default App;

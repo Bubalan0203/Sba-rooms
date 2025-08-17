@@ -9,66 +9,30 @@ import {
   query,
   where
 } from "firebase/firestore";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  CalendarPlus, 
+  Users, 
+  DollarSign, 
+  Phone, 
+  User, 
+  Upload,
+  CheckCircle,
+  ArrowRight,
+  ArrowLeft,
+  X,
+  Hotel,
+  CreditCard,
+  FileText
+} from "lucide-react";
 
-// Material UI Imports
-import {
-  Container,
-  Typography,
-  Button,
-  Modal,
-  Box,
-  Paper,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  CircularProgress,
-  Grid,
-  Divider,
-  List,
-  ListItem,
-  ListItemText
-} from "@mui/material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-
-// Custom theme using your logo's colors
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#26A69A", // Teal color
-    },
-    secondary: {
-      main: "#424242", // Dark grey
-    },
-  },
-  typography: {
-    h4: {
-      fontWeight: 600,
-    },
-  },
-});
-
-// Style for the modal
-const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '90%',
-  maxWidth: 800,
-  bgcolor: 'background.paper',
-  boxShadow: 24,
-  p: 4,
-  borderRadius: 2,
-  maxHeight: '90vh',
-  overflowY: 'auto'
-};
-
+// UI Components
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/Card";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { Select } from "../components/ui/Select";
+import { Badge } from "../components/ui/Badge";
+import { cn, formatCurrency } from "../lib/utils";
 
 function BookingPage() {
   const [rooms, setRooms] = useState([]);
@@ -76,7 +40,7 @@ function BookingPage() {
   const [modalOpen, setModalOpen] = useState(false);
 
   // Form State
-  const [step, setStep] = useState(1); // Now has 3 steps
+  const [step, setStep] = useState(1);
   const [numRooms, setNumRooms] = useState(1);
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [roomDetails, setRoomDetails] = useState({});
@@ -219,132 +183,428 @@ function BookingPage() {
     return total + amount;
   }, 0);
 
+  const StepIndicator = ({ currentStep, totalSteps }) => (
+    <div className="flex items-center justify-center mb-6">
+      {Array.from({ length: totalSteps }, (_, i) => i + 1).map((stepNum) => (
+        <React.Fragment key={stepNum}>
+          <div className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all",
+            stepNum === currentStep 
+              ? "bg-primary text-primary-foreground" 
+              : stepNum < currentStep 
+                ? "bg-green-500 text-white" 
+                : "bg-muted text-muted-foreground"
+          )}>
+            {stepNum < currentStep ? <CheckCircle className="h-4 w-4" /> : stepNum}
+          </div>
+          {stepNum < totalSteps && (
+            <div className={cn(
+              "w-12 h-0.5 mx-2 transition-all",
+              stepNum < currentStep ? "bg-green-500" : "bg-muted"
+            )} />
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
   return (
-    <ThemeProvider theme={theme}>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-            <Typography variant="h4" component="h1" color="primary">
-                Booking Management
-            </Typography>
-            <Button variant="contained" color="primary" startIcon={<AddCircleOutlineIcon />} onClick={handleOpenModal}>
-                Add New Booking
-            </Button>
-        </Box>
-        <Typography variant="body1">Click the button above to start a new booking.</Typography>
-        
-        <Modal open={modalOpen} onClose={handleCloseModal}>
-          <Box sx={modalStyle} component="form" onSubmit={handleSubmit}>
-            {/* Step 1: Room Selection */}
-            {step === 1 && (
-              <>
-                <Typography variant="h5" component="h2" sx={{ mb: 3 }}>Step 1: Select Rooms</Typography>
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <InputLabel id="num-rooms-label">How many rooms?</InputLabel>
-                    <Select labelId="num-rooms-label" value={numRooms} label="How many rooms?" onChange={(e) => { setNumRooms(e.target.value); setSelectedRooms([]); }}>
-                        {[...Array(Math.min(10, rooms.length)).keys()].map(n => (<MenuItem key={n + 1} value={n + 1}>{n + 1}</MenuItem>))}
-                    </Select>
-                </FormControl>
-                <Typography variant="subtitle1" gutterBottom>Select Available Rooms ({selectedRooms.length} / {numRooms})</Typography>
-                <Paper variant="outlined" sx={{ p: 2, maxHeight: 200, overflowY: 'auto', mb: 3 }}>
-                    <FormGroup>
-                        {loading ? <CircularProgress /> : rooms.map(room => (<FormControlLabel control={<Checkbox checked={selectedRooms.includes(room.id)} onChange={() => handleRoomSelect(room.id)} disabled={!selectedRooms.includes(room.id) && selectedRooms.length >= numRooms}/>} label={`${room.roomNo} (${room.roomType})`} key={room.id}/>))}
-                    </FormGroup>
-                </Paper>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button onClick={handleCloseModal} sx={{ mr: 1 }}>Cancel</Button>
-                    <Button variant="contained" onClick={handleProceedToDetails}>Next</Button>
-                </Box>
-              </>
-            )}
+    <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center"
+        >
+          <h1 className="text-3xl font-bold text-foreground mb-2">Booking Management</h1>
+          <p className="text-muted-foreground">Create new bookings for your guests</p>
+        </motion.div>
 
-            {/* Step 2: Guest and Payment Details */}
-            {step === 2 && (
-              <>
-                <Typography variant="h5" component="h2" sx={{ mb: 3 }}>Step 2: Add Details</Typography>
-                <Grid container spacing={3}>
-                    <Grid item xs={12} md={5}>
-                        <Typography variant="h6" gutterBottom>Guest Details</Typography>
-                        <TextField label="Guest Name" fullWidth required value={guestName} onChange={e => setGuestName(e.target.value)} sx={{ mb: 2 }} />
-                        <TextField label="Phone Number" type="tel" fullWidth required value={guestPhone} onChange={e => setGuestPhone(e.target.value)} sx={{ mb: 2 }} />
-                        <Button variant="outlined" component="label" fullWidth> Upload ID Proof <input type="file" accept="image/*" hidden onChange={handleFileChange} required /></Button>
-                        {idProofBase64 && <Typography variant="caption" color="green" display="block" mt={1}>ID Proof selected.</Typography>}
-                    </Grid>
-                    <Grid item xs={12} md={7}>
-                        <Typography variant="h6" gutterBottom>Charges & Persons</Typography>
-                        <TextField label="Common Amount (per room)" type="number" fullWidth required value={commonAmount} onChange={handleCommonAmountChange} sx={{ mb: 2 }} />
-                        <Divider sx={{mb: 2}}/>
-                        <Box sx={{ maxHeight: 250, overflowY: 'auto', pr: 1 }}>
-                        {selectedRooms.map(roomId => {
-                            const room = rooms.find(r => r.id === roomId);
-                            return (
-                                <Box key={roomId} sx={{ mb: 2 }}>
-                                    <Typography variant="subtitle2" gutterBottom>Room {room.roomNo}</Typography>
-                                    <TextField label={`Persons in Room ${room.roomNo}`} type="number" fullWidth required value={roomDetails[roomId]?.numberOfPersons || ''} onChange={(e) => handleDetailChange(roomId, 'numberOfPersons', e.target.value)} sx={{ mb: 1 }}/>
-                                    <TextField label={`Amount for Room ${room.roomNo}`} type="number" fullWidth value={roomDetails[roomId]?.amount || ''} onChange={(e) => handleDetailChange(roomId, 'amount', e.target.value)}/>
-                                </Box>
-                            );
-                        })}
-                        </Box>
-                    </Grid>
-                </Grid>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-                    <Button onClick={() => setStep(1)}>Back</Button>
-                    <Button variant="contained" onClick={() => setStep(3)}>Preview Booking</Button>
-                </Box>
-              </>
-            )}
+        {/* Main Content */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="text-center"
+        >
+          <Card className="max-w-md mx-auto">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CalendarPlus className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Ready to Book?</h2>
+              <p className="text-muted-foreground mb-6">
+                Start creating a new booking for your guests. We'll guide you through the process step by step.
+              </p>
+              <Button onClick={handleOpenModal} size="lg" className="w-full">
+                <CalendarPlus className="h-4 w-4 mr-2" />
+                Create New Booking
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-            {/* ############ START OF NEW PREVIEW STEP ############ */}
-            {step === 3 && (
-                <>
-                    <Typography variant="h5" component="h2" sx={{ mb: 3 }}>Step 3: Confirm Booking</Typography>
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={6}>
-                            <Typography variant="h6" gutterBottom>Guest Details</Typography>
-                            <Typography variant="body1"><strong>Name:</strong> {guestName}</Typography>
-                            <Typography variant="body1"><strong>Phone:</strong> {guestPhone}</Typography>
-                            <Typography variant="h6" gutterBottom sx={{mt: 2}}>ID Proof</Typography>
-                            {idProofBase64 ? 
-                                <Box component="img" src={idProofBase64} alt="ID Proof Preview" sx={{ width: '100%', maxWidth: '250px', border: '1px solid #ddd', borderRadius: '4px' }} /> :
-                                <Typography variant="body2" color="error">No ID proof uploaded.</Typography>
-                            }
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Typography variant="h6" gutterBottom>Booking Summary</Typography>
-                            <List dense>
+        {/* Booking Modal */}
+        <AnimatePresence>
+          {modalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+              onClick={handleCloseModal}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-card rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto border shadow-xl"
+              >
+                <div className="sticky top-0 bg-card border-b p-4 flex items-center justify-between">
+                  <h2 className="text-xl font-semibold">New Booking</h2>
+                  <Button variant="ghost" size="icon" onClick={handleCloseModal}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <div className="p-6">
+                  <StepIndicator currentStep={step} totalSteps={3} />
+
+                  <form onSubmit={handleSubmit}>
+                    {/* Step 1: Room Selection */}
+                    {step === 1 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-6"
+                      >
+                        <div className="text-center mb-6">
+                          <Hotel className="h-12 w-12 text-primary mx-auto mb-2" />
+                          <h3 className="text-lg font-semibold">Select Rooms</h3>
+                          <p className="text-muted-foreground">Choose the rooms for your booking</p>
+                        </div>
+
+                        <div className="max-w-xs mx-auto">
+                          <label className="block text-sm font-medium mb-2">Number of Rooms</label>
+                          <Select
+                            value={numRooms}
+                            onChange={(e) => { setNumRooms(e.target.value); setSelectedRooms([]); }}
+                          >
+                            {[...Array(Math.min(10, rooms.length)).keys()].map(n => (
+                              <option key={n + 1} value={n + 1}>{n + 1} Room{n > 0 ? 's' : ''}</option>
+                            ))}
+                          </Select>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="font-medium">Available Rooms</h4>
+                            <Badge variant="secondary">
+                              {selectedRooms.length} / {numRooms} selected
+                            </Badge>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-60 overflow-y-auto">
+                            {rooms.map(room => (
+                              <motion.div
+                                key={room.id}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                              >
+                                <Card 
+                                  className={cn(
+                                    "cursor-pointer transition-all",
+                                    selectedRooms.includes(room.id) 
+                                      ? "ring-2 ring-primary bg-primary/5" 
+                                      : "hover:shadow-md",
+                                    !selectedRooms.includes(room.id) && selectedRooms.length >= numRooms && "opacity-50 cursor-not-allowed"
+                                  )}
+                                  onClick={() => {
+                                    if (selectedRooms.includes(room.id) || selectedRooms.length < numRooms) {
+                                      handleRoomSelect(room.id);
+                                    }
+                                  }}
+                                >
+                                  <CardContent className="p-3">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <p className="font-medium">Room {room.roomNo}</p>
+                                        <p className="text-sm text-muted-foreground">{room.roomType}</p>
+                                      </div>
+                                      {selectedRooms.includes(room.id) && (
+                                        <CheckCircle className="h-5 w-5 text-primary" />
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </motion.div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end">
+                          <Button 
+                            type="button" 
+                            onClick={handleProceedToDetails}
+                            disabled={selectedRooms.length !== parseInt(numRooms, 10)}
+                          >
+                            Next Step
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Step 2: Details */}
+                    {step === 2 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-6"
+                      >
+                        <div className="text-center mb-6">
+                          <FileText className="h-12 w-12 text-primary mx-auto mb-2" />
+                          <h3 className="text-lg font-semibold">Booking Details</h3>
+                          <p className="text-muted-foreground">Enter guest information and pricing</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {/* Guest Details */}
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="flex items-center gap-2">
+                                <User className="h-5 w-5" />
+                                Guest Information
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Guest Name *</label>
+                                <Input
+                                  placeholder="Enter guest name"
+                                  value={guestName}
+                                  onChange={e => setGuestName(e.target.value)}
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Phone Number *</label>
+                                <Input
+                                  type="tel"
+                                  placeholder="Enter phone number"
+                                  value={guestPhone}
+                                  onChange={e => setGuestPhone(e.target.value)}
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium mb-2">ID Proof *</label>
+                                <div className="border-2 border-dashed border-border rounded-lg p-4 text-center">
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="hidden"
+                                    id="id-proof"
+                                    required
+                                  />
+                                  <label htmlFor="id-proof" className="cursor-pointer">
+                                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                                    <p className="text-sm text-muted-foreground">
+                                      {idProofBase64 ? "ID Proof uploaded ✓" : "Click to upload ID proof"}
+                                    </p>
+                                  </label>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Room Details */}
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="flex items-center gap-2">
+                                <CreditCard className="h-5 w-5" />
+                                Pricing & Occupancy
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Common Amount (per room)</label>
+                                <Input
+                                  type="number"
+                                  placeholder="Enter amount"
+                                  value={commonAmount}
+                                  onChange={handleCommonAmountChange}
+                                  required
+                                />
+                              </div>
+                              
+                              <div className="space-y-3 max-h-40 overflow-y-auto">
                                 {selectedRooms.map(roomId => {
-                                    const room = rooms.find(r => r.id === roomId);
-                                    const finalAmount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
-                                    return (
-                                        <ListItem key={roomId} divider>
-                                            <ListItemText 
-                                                primary={`Room ${room.roomNo}`}
-                                                secondary={`${roomDetails[roomId]?.numberOfPersons || 1} Person(s)`}
-                                            />
-                                            <Typography variant="body1">₹{finalAmount.toFixed(2)}</Typography>
-                                        </ListItem>
-                                    );
+                                  const room = rooms.find(r => r.id === roomId);
+                                  return (
+                                    <div key={roomId} className="p-3 bg-muted/50 rounded-lg">
+                                      <p className="font-medium mb-2">Room {room.roomNo}</p>
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <div>
+                                          <label className="block text-xs font-medium mb-1">Persons</label>
+                                          <Input
+                                            type="number"
+                                            min="1"
+                                            placeholder="1"
+                                            value={roomDetails[roomId]?.numberOfPersons || ''}
+                                            onChange={(e) => handleDetailChange(roomId, 'numberOfPersons', e.target.value)}
+                                            required
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-xs font-medium mb-1">Amount</label>
+                                          <Input
+                                            type="number"
+                                            placeholder="Amount"
+                                            value={roomDetails[roomId]?.amount || ''}
+                                            onChange={(e) => handleDetailChange(roomId, 'amount', e.target.value)}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
                                 })}
-                                <ListItem>
-                                    <ListItemText primary={<Typography variant="h6">Total</Typography>} />
-                                    <Typography variant="h6">₹{totalAmount.toFixed(2)}</Typography>
-                                </ListItem>
-                            </List>
-                        </Grid>
-                    </Grid>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-                        <Button onClick={() => setStep(2)}>Back to Edit</Button>
-                        <Button type="submit" variant="contained" disabled={isSubmitting}>
-                            {isSubmitting ? <CircularProgress size={24} /> : 'Confirm & Book Now'}
-                        </Button>
-                    </Box>
-                </>
-            )}
-            {/* ############ END OF NEW PREVIEW STEP ############ */}
-          </Box>
-        </Modal>
-      </Container>
-    </ThemeProvider>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back
+                          </Button>
+                          <Button type="button" onClick={() => setStep(3)}>
+                            Preview Booking
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Step 3: Preview */}
+                    {step === 3 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-6"
+                      >
+                        <div className="text-center mb-6">
+                          <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                          <h3 className="text-lg font-semibold">Confirm Booking</h3>
+                          <p className="text-muted-foreground">Review all details before confirming</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          {/* Guest Summary */}
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Guest Details</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Name:</span>
+                                <span className="font-medium">{guestName}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Phone:</span>
+                                <span className="font-medium">{guestPhone}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">ID Proof:</span>
+                                {idProofBase64 && (
+                                  <img
+                                    src={idProofBase64}
+                                    alt="ID Proof"
+                                    className="mt-2 w-full max-w-xs rounded-lg border"
+                                  />
+                                )}
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          {/* Booking Summary */}
+                          <Card>
+                            <CardHeader>
+                              <CardTitle>Booking Summary</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-3">
+                                {selectedRooms.map(roomId => {
+                                  const room = rooms.find(r => r.id === roomId);
+                                  const finalAmount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
+                                  return (
+                                    <div key={roomId} className="flex justify-between items-center p-2 bg-muted/50 rounded">
+                                      <div>
+                                        <p className="font-medium">Room {room.roomNo}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                          {roomDetails[roomId]?.numberOfPersons || 1} person(s)
+                                        </p>
+                                      </div>
+                                      <span className="font-semibold">{formatCurrency(finalAmount)}</span>
+                                    </div>
+                                  );
+                                })}
+                                <div className="border-t pt-3 flex justify-between items-center">
+                                  <span className="text-lg font-semibold">Total:</span>
+                                  <span className="text-lg font-bold text-primary">{formatCurrency(totalAmount)}</span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        <div className="flex justify-between">
+                          <Button type="button" variant="outline" onClick={() => setStep(2)}>
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Edit
+                          </Button>
+                          <Button type="submit" disabled={isSubmitting} size="lg">
+                            {isSubmitting ? (
+                              <motion.div
+                                animate={{ rotate: 360 }}
+                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
+                              />
+                            ) : (
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                            )}
+                            {isSubmitting ? 'Processing...' : 'Confirm Booking'}
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </form>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
   );
 }
 
