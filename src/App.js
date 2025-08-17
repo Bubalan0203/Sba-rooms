@@ -1,10 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./components/ThemeProvider";
 import IntroAnimation from "./components/IntroAnimation";
 import "./index.css";
 
 // Import your pages
-import HomePage from "./pages/HomePage";
 import RoomsPage from "./pages/RoomsPage";
 import BookingPage from "./pages/BookingPage";
 import AllBookingsPage from "./pages/AllBookingsPage";

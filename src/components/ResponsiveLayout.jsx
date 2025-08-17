@@ -1,11 +1,8 @@
 import React from 'react';
-import { Box, Container, useTheme, useMediaQuery } from '@mui/material';
+import { Container } from '@mui/material';
 import { motion } from 'framer-motion';
 
 const ResponsiveLayout = ({ children, maxWidth = "xl", sx = {} }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
