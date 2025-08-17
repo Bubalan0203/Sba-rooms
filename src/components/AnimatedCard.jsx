@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card } from '@mui/material';
+import { Card, CardContent, CardActions } from '@mui/material';
 import { motion } from 'framer-motion';
 
 const AnimatedCard = ({ 
@@ -26,6 +26,17 @@ const AnimatedCard = ({
       }
     }
   };
+
+  const hoverVariants = hover ? {
+    hover: {
+      y: -8,
+      scale: 1.02,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    }
+  } : {};
 
   return (
     <motion.div
