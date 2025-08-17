@@ -29,9 +29,9 @@ function App() {
             <main style={styles.mainContent}>
               <Routes>
                 {/* Add a default route to redirect to the home page */}
-                <Route path="/" element={<HomePage />} />
+    
                 
-                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/" element={<DashboardPage />} />
                 <Route path="/rooms" element={<RoomsPage />} />
                 <Route path="/booking" element={<BookingPage />} />
                 <Route path="/active-bookings" element={<ActiveBookingsPage />} />

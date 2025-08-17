@@ -35,8 +35,7 @@ const SideNavbar = () => {
   };
 
   const menuItems = [
-    { text: 'Home', icon: <HomeIcon />, path: '/' },
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
     { text: 'Manage Rooms', icon: <HotelIcon />, path: '/rooms' },
     { text: 'New Booking', icon: <BookingIcon />, path: '/booking' },
     { text: 'Active Bookings', icon: <ActiveIcon />, path: '/active-bookings' },
