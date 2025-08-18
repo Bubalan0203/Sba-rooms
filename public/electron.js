@@ -1,29 +1,34 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
+const isDev = require('electron-is-dev'); // To check if you are in development mode
 
 function createWindow() {
-  // Create the browser window.
   const win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false // Be aware of security implications with these settings
+      contextIsolation: false,
     },
+    // Add the icon path here
+    icon: path.join(__dirname, 'icon.png') // Make sure you have an icon.png in your public folder
   });
 
-  // Load the React app.
-  // In development, this points to the dev server.
-  win.loadURL('http://localhost:3000');
+  // Load from the dev server in development, or the built file in production
+  win.loadURL(
+    isDev
+      ? 'http://localhost:3000'
+      : `file://${path.join(__dirname, '../build/index.html')}`
+  );
 
-  // Optional: Open the DevTools.
-  // win.webContents.openDevTools();
+  // Optional: Open DevTools in development
+  if (isDev) {
+    win.webContents.openDevTools();
+  }
 }
 
-// This method will be called when Electron has finished initialization.
 app.whenReady().then(createWindow);
 
-// Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
@@ -31,8 +36,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
