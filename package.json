@@ -1,7 +1,9 @@
 {
-  "name": "my-app",
+  "name": "SBA_ROOMS",
   "version": "0.1.0",
   "private": true,
+  "description": "A description for the SBA Rooms application.",
+  "author": "Your Name",
   "main": "public/electron.js",
   "homepage": "./",
   "dependencies": {
@@ -16,6 +18,7 @@
     "@testing-library/user-event": "^13.5.0",
     "chart.js": "^4.5.0",
     "date-fns": "^4.1.0",
+    "electron-is-dev": "^3.0.1",
     "firebase": "^12.1.0",
     "framer-motion": "^12.23.12",
     "jspdf": "^3.0.1",
@@ -28,15 +31,14 @@
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
-   "scripts": {
+  "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "electron:start": "concurrently \"npm start\" \"wait-on http://localhost:3000 && electron .\"",
-     "electron:package:mac": "npm run build && electron-builder -m -c.extraMetadata.main=build/electron.js",
+    "electron:package:mac": "npm run build && electron-builder -m -c.extraMetadata.main=build/electron.js",
     "electron:package:win": "npm run build && electron-builder -w -c.extraMetadata.main=build/electron.js"
-  
   },
   "eslintConfig": {
     "extends": [
@@ -59,6 +61,7 @@
   "devDependencies": {
     "concurrently": "^9.2.0",
     "electron": "^37.3.0",
+    "electron-builder": "^26.0.12",
     "wait-on": "^8.0.4"
   }
 }

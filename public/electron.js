@@ -1,42 +1,33 @@
+// public/electron.js
+
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const isDev = require('electron-is-dev'); // To check if you are in development mode
+const isDev = require('electron-is-dev');
 
 function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
+      // --- SECURITY ENHANCEMENTS ---
+      nodeIntegration: false, // Keep Node.js integration off in the renderer
+      contextIsolation: true, // Protect against prototype pollution
+      preload: path.join(__dirname, './preload.js') // Use a preload script
     },
-    // Add the icon path here
-    icon: path.join(__dirname, 'icon.png') // Make sure you have an icon.png in your public folder
+    icon: path.join(__dirname, './icon.png')
   });
 
-  // Load from the dev server in development, or the built file in production
   win.loadURL(
     isDev
       ? 'http://localhost:3000'
       : `file://${path.join(__dirname, '../build/index.html')}`
   );
 
-  // Optional: Open DevTools in development
   if (isDev) {
     win.webContents.openDevTools();
   }
 }
 
+// ... rest of your file remains the same
 app.whenReady().then(createWindow);
-
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
-});
+// ...
