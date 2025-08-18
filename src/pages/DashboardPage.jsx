@@ -1,8 +1,32 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { db } from "../config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
-
-// --- Library Imports ---
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Grid,
+  Card,
+  CardContent,
+  useTheme,
+  useMediaQuery,
+  Avatar,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  LinearProgress,
+} from '@mui/material';
+import {
+  TrendingUp as TrendingUpIcon,
+  Hotel as HotelIcon,
+  AttachMoney as MoneyIcon,
+  Assessment as AssessmentIcon,
+} from '@mui/icons-material';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {
@@ -18,8 +42,8 @@ import {
 } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 import { subDays, format, isWithinInterval, startOfDay, endOfDay } from "date-fns";
+import { motion } from 'framer-motion';
 
-// --- Register Chart.js components ---
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -31,27 +55,88 @@ ChartJS.register(
   Legend
 );
 
-// --- Reusable KPICard Component ---
-const KPICard = ({ title, value, icon }) => (
-  <div style={styles.kpiCard}>
-    <div style={styles.kpiIcon}>{icon}</div>
-    <div>
-      <div style={styles.kpiValue}>{value}</div>
-      <div style={styles.kpiTitle}>{title}</div>
-    </div>
-  </div>
-);
+const KPICard = ({ title, value, icon, color, trend }) => {
+  const theme = useTheme();
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      whileHover={{ y: -4 }}
+    >
+      <Card
+        sx={{
+          height: '100%',
+          background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
+          border: `1px solid ${color}30`,
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            boxShadow: theme.shadows[8],
+            borderColor: color,
+          },
+        }}
+      >
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+            <Avatar
+              sx={{
+                bgcolor: `${color}20`,
+                color: color,
+                width: 56,
+                height: 56,
+              }}
+            >
+              {icon}
+            </Avatar>
+            {trend && (
+              <Chip
+                icon={<TrendingUpIcon sx={{ fontSize: '1rem' }} />}
+                label={trend}
+                size="small"
+                sx={{
+                  bgcolor: `${theme.palette.success.main}20`,
+                  color: theme.palette.success.main,
+                  fontWeight: 600,
+                }}
+              />
+            )}
+          </Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: theme.palette.text.primary,
+              mb: 1,
+            }}
+          >
+            {value}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: theme.palette.text.secondary,
+              fontWeight: 500,
+            }}
+          >
+            {title}
+          </Typography>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
 
-// --- Main Dashboard Component ---
 const DashboardPage = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [allBookings, setAllBookings] = useState([]);
   const [dateRange, setDateRange] = useState([subDays(new Date(), 30), new Date()]);
   const [startDate, endDate] = dateRange;
+  const [loading, setLoading] = useState(true);
 
-  // This is a configuration value. You should update this to your total number of rooms.
   const TOTAL_AVAILABLE_ROOMS = 15;
 
-  // 1. Fetch all bookings from Firestore on component mount
   useEffect(() => {
     const bookingsCollection = collection(db, "bookings");
     const unsubscribe = onSnapshot(bookingsCollection, (snapshot) => {
@@ -60,17 +145,16 @@ const DashboardPage = () => {
         ...doc.data(),
       }));
       setAllBookings(bookingsData);
+      setLoading(false);
     });
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe();
   }, []);
 
-  // 2. Filter bookings based on the selected date range
   const filteredBookings = useMemo(() => {
     if (!startDate || !endDate) return [];
     return allBookings.filter((booking) => {
       const checkInDate = booking.checkIn?.toDate();
       if (!checkInDate) return false;
-      // Compare dates within the selected interval
       return isWithinInterval(checkInDate, {
         start: startOfDay(startDate),
         end: endOfDay(endDate),
@@ -78,7 +162,6 @@ const DashboardPage = () => {
     });
   }, [allBookings, startDate, endDate]);
 
-  // 3. Calculate all KPIs using the filtered data
   const {
     totalRevenue,
     totalBookings,
@@ -100,28 +183,22 @@ const DashboardPage = () => {
       };
     }
 
-    // KPI Calculations
     const totalRevenue = filteredBookings.reduce((sum, booking) => sum + (booking.amount || 0), 0);
     const totalBookings = filteredBookings.length;
     const averageDailyRate = totalBookings > 0 ? totalRevenue / totalBookings : 0;
 
-    // Occupancy Rate Calculation (Simplified)
-    // Number of days in the selected range
     const daysInRange = (endOfDay(endDate).getTime() - startOfDay(startDate).getTime()) / (1000 * 3600 * 24) + 1;
     const totalRoomNightsAvailable = TOTAL_AVAILABLE_ROOMS * daysInRange;
     const occupancyRate = totalRoomNightsAvailable > 0 ? (totalBookings / totalRoomNightsAvailable) * 100 : 0;
 
-    // Data processing for charts and tables
     const revenueByDate = {};
     const bookingsByRoomData = {};
     const performanceByRoomData = {};
 
     filteredBookings.forEach((booking) => {
-      // For Revenue Line Chart
       const dateStr = format(booking.checkIn.toDate(), "yyyy-MM-dd");
       revenueByDate[dateStr] = (revenueByDate[dateStr] || 0) + booking.amount;
 
-      // For Bookings Bar Chart & Performance Table
       const roomNo = booking.roomNo || "Unknown";
       bookingsByRoomData[roomNo] = (bookingsByRoomData[roomNo] || 0) + 1;
       if (!performanceByRoomData[roomNo]) {
@@ -156,14 +233,16 @@ const DashboardPage = () => {
     };
   }, [filteredBookings, startDate, endDate]);
 
-  // --- Chart Data & Options ---
   const lineChartData = {
     labels: revenueOverTime.labels,
     datasets: [{
       label: "Revenue",
       data: revenueOverTime.data,
-      borderColor: "rgb(75, 192, 192)",
-      backgroundColor: "rgba(75, 192, 192, 0.5)",
+      borderColor: theme.palette.primary.main,
+      backgroundColor: `${theme.palette.primary.main}20`,
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
     }],
   };
   
@@ -172,88 +251,263 @@ const DashboardPage = () => {
     datasets: [{
       label: "# of Bookings",
       data: bookingsByRoom.data,
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
+      backgroundColor: theme.palette.secondary.main,
+      borderRadius: 8,
     }],
   };
 
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+      y: {
+        grid: {
+          color: theme.palette.divider,
+        },
+      },
+    },
+  };
+
+  if (loading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <LinearProgress sx={{ width: '100%', maxWidth: 400 }} />
+        </Box>
+      </Container>
+    );
+  }
+
   return (
-    <div style={styles.dashboardContainer}>
-      <div style={styles.header}>
-        <h2>SBA Rooms Dashboard</h2>
-        <div style={styles.datePickerContainer}>
-          <DatePicker
-            selectsRange={true}
-            startDate={startDate}
-            endDate={endDate}
-            onChange={(update) => setDateRange(update)}
-            isClearable={true}
-            dateFormat="MMM d, yyyy"
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1, md: 3 } }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary, mb: 1 }}>
+              Dashboard Overview
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Monitor your hotel's performance and key metrics
+            </Typography>
+          </Box>
+          <Paper
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              border: `1px solid ${theme.palette.divider}`,
+              '& .react-datepicker-wrapper': {
+                width: '100%',
+              },
+              '& .react-datepicker__input-container input': {
+                border: 'none',
+                outline: 'none',
+                fontSize: '0.875rem',
+                fontWeight: 500,
+                color: theme.palette.text.primary,
+                backgroundColor: 'transparent',
+                cursor: 'pointer',
+                minWidth: '200px',
+              },
+            }}
+          >
+            <DatePicker
+              selectsRange={true}
+              startDate={startDate}
+              endDate={endDate}
+              onChange={(update) => setDateRange(update)}
+              isClearable={true}
+              dateFormat="MMM d, yyyy"
+              placeholderText="Select date range"
+            />
+          </Paper>
+        </Box>
+      </Box>
+
+      {/* KPI Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} lg={3}>
+          <KPICard
+            title="Total Revenue"
+            value={`₹${totalRevenue.toLocaleString()}`}
+            icon={<MoneyIcon />}
+            color={theme.palette.success.main}
+            trend="+12%"
           />
-        </div>
-      </div>
+        </Grid>
+        <Grid item xs={12} sm={6} lg={3}>
+          <KPICard
+            title="Total Bookings"
+            value={totalBookings}
+            icon={<HotelIcon />}
+            color={theme.palette.primary.main}
+            trend="+8%"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} lg={3}>
+          <KPICard
+            title="Occupancy Rate"
+            value={`${occupancyRate.toFixed(1)}%`}
+            icon={<AssessmentIcon />}
+            color={theme.palette.warning.main}
+            trend="+5%"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} lg={3}>
+          <KPICard
+            title="Avg. Daily Rate"
+            value={`₹${averageDailyRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            icon={<TrendingUpIcon />}
+            color={theme.palette.secondary.main}
+            trend="+15%"
+          />
+        </Grid>
+      </Grid>
 
-      {/* KPI Cards Section */}
-      <div style={styles.kpiGrid}>
-        <KPICard title="Total Revenue" value={`₹${totalRevenue.toLocaleString()}`} icon="💵" />
-        <KPICard title="Total Bookings" value={totalBookings} icon="🏨" />
-        <KPICard title="Occupancy Rate" value={`${occupancyRate.toFixed(1)}%`} icon="📈" />
-        <KPICard title="Avg. Daily Rate (ADR)" value={`₹${averageDailyRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} icon="💰" />
-      </div>
+      {/* Charts */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} lg={8}>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Paper sx={{ p: 3, height: 400, borderRadius: 3, boxShadow: theme.shadows[2] }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
+                Revenue Trend
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Line data={lineChartData} options={chartOptions} />
+              </Box>
+            </Paper>
+          </motion.div>
+        </Grid>
+        <Grid item xs={12} lg={4}>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Paper sx={{ p: 3, height: 400, borderRadius: 3, boxShadow: theme.shadows[2] }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
+                Bookings by Room
+              </Typography>
+              <Box sx={{ height: 300 }}>
+                <Bar data={barChartData} options={chartOptions} />
+              </Box>
+            </Paper>
+          </motion.div>
+        </Grid>
+      </Grid>
 
-      {/* Charts Section */}
-      <div style={styles.chartsGrid}>
-        <div style={styles.chartContainer}>
-            <h3>Revenue Trend</h3>
-            <Line data={lineChartData} options={{ responsive: true, maintainAspectRatio: false }} />
-        </div>
-        <div style={styles.chartContainer}>
-            <h3>Bookings by Room</h3>
-            <Bar data={barChartData} options={{ responsive: true, maintainAspectRatio: false }} />
-        </div>
-      </div>
-
-      {/* Detailed Table Section */}
-       <div style={styles.tableContainer}>
-        <h3>Performance Per Room</h3>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Room No.</th>
-              <th style={styles.th}># of Bookings</th>
-              <th style={styles.th}>Total Revenue</th>
-            </tr>
-          </thead>
-          <tbody>
-            {performanceByRoom.map(room => (
-               <tr key={room.roomNo}>
-                 <td style={styles.td}>{room.roomNo}</td>
-                 <td style={styles.td}>{room.totalBookings}</td>
-                 <td style={styles.td}>₹{room.totalRevenue.toLocaleString()}</td>
-               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      {/* Performance Table */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <Paper sx={{ borderRadius: 3, boxShadow: theme.shadows[2], overflow: 'hidden' }}>
+          <Box sx={{ p: 3, borderBottom: `1px solid ${theme.palette.divider}` }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+              Room Performance
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Detailed breakdown of bookings and revenue per room
+            </Typography>
+          </Box>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: theme.palette.grey[50] }}>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>Room No.</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>Bookings</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>Revenue</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>Performance</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {performanceByRoom.length > 0 ? (
+                  performanceByRoom.map((room, index) => (
+                    <TableRow
+                      key={room.roomNo}
+                      sx={{
+                        '&:hover': { bgcolor: theme.palette.action.hover },
+                        borderLeft: index === 0 ? `4px solid ${theme.palette.success.main}` : 'none',
+                      }}
+                    >
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main, fontSize: '0.875rem' }}>
+                            {room.roomNo}
+                          </Avatar>
+                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                            Room {room.roomNo}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={room.totalBookings}
+                          size="small"
+                          sx={{
+                            bgcolor: theme.palette.primary.light + '30',
+                            color: theme.palette.primary.main,
+                            fontWeight: 600,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: 600, color: theme.palette.success.main }}>
+                        ₹{room.totalRevenue.toLocaleString()}
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <LinearProgress
+                            variant="determinate"
+                            value={Math.min((room.totalRevenue / Math.max(...performanceByRoom.map(r => r.totalRevenue))) * 100, 100)}
+                            sx={{
+                              width: 60,
+                              height: 6,
+                              borderRadius: 3,
+                              bgcolor: theme.palette.grey[200],
+                              '& .MuiLinearProgress-bar': {
+                                borderRadius: 3,
+                                bgcolor: index === 0 ? theme.palette.success.main : theme.palette.primary.main,
+                              },
+                            }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            {Math.round((room.totalRevenue / Math.max(...performanceByRoom.map(r => r.totalRevenue))) * 100)}%
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography variant="body2" color="text.secondary">
+                        No performance data available for the selected period
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Paper>
+      </motion.div>
+    </Container>
   );
-};
-
-// --- Styles ---
-const styles = {
-    dashboardContainer: { fontFamily: 'Arial, sans-serif', padding: '20px', backgroundColor: '#f4f7f6' },
-    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-    datePickerContainer: { zIndex: 10 },
-    kpiGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '30px' },
-    kpiCard: { display: 'flex', alignItems: 'center', backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
-    kpiIcon: { fontSize: '2.5rem', marginRight: '20px' },
-    kpiValue: { fontSize: '1.8rem', fontWeight: 'bold' },
-    kpiTitle: { fontSize: '0.9rem', color: '#666' },
-    chartsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px', marginBottom: '30px' },
-    chartContainer: { backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', height: '400px' },
-    tableContainer: { backgroundColor: '#fff', padding: '20px', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' },
-    table: { width: '100%', borderCollapse: 'collapse' },
-    th: { borderBottom: '2px solid #ddd', padding: '12px', textAlign: 'left', backgroundColor: '#f9f9f9' },
-    td: { borderBottom: '1px solid #ddd', padding: '12px', textAlign: 'left' },
 };
 
 export default DashboardPage;

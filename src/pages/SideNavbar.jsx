@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Drawer, 
   List, 
@@ -11,6 +11,8 @@ import {
   useTheme,
   useMediaQuery,
   IconButton,
+  Avatar,
+  Chip,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -19,10 +21,10 @@ import {
   EventAvailable as ActiveIcon,
   History as HistoryIcon,
   Menu as MenuIcon,
+  Close as CloseIcon,
 } from '@mui/icons-material';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 
 const SideNavbar = () => {
   const theme = useTheme();
@@ -34,117 +36,182 @@ const SideNavbar = () => {
   };
 
   const menuItems = [
-    { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-    { text: 'Manage Rooms', icon: <HotelIcon />, path: '/rooms' },
-    { text: 'New Booking', icon: <BookingIcon />, path: '/booking' },
-    { text: 'Active Bookings', icon: <ActiveIcon />, path: '/active-bookings' },
-    { text: 'All Bookings', icon: <HistoryIcon />, path: '/all-bookings' },
+    { text: 'Dashboard', icon: <DashboardIcon />, path: '/', color: '#1976d2' },
+    { text: 'Manage Rooms', icon: <HotelIcon />, path: '/rooms', color: '#26a69a' },
+    { text: 'New Booking', icon: <BookingIcon />, path: '/booking', color: '#ff9800' },
+    { text: 'Active Bookings', icon: <ActiveIcon />, path: '/active-bookings', color: '#4caf50' },
+    { text: 'All Bookings', icon: <HistoryIcon />, path: '/all-bookings', color: '#9c27b0' },
   ];
 
   const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Logo Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
+      {/* Header Section */}
+      <Box
+        sx={{
+          p: 3,
+          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+          color: 'white',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
       >
-        <Box
-          sx={{
-            p: 3,
-            textAlign: 'center',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white',
-          }}
-        >
-          <Box
+        {/* Close button for mobile */}
+        {isMobile && (
+          <IconButton
+            onClick={handleDrawerToggle}
             sx={{
-              width: 60,
-              height: 60,
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.2)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              mx: 'auto',
-              mb: 2,
-              backdropFilter: 'blur(10px)',
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'white',
+              zIndex: 1,
             }}
           >
-            <Typography variant="h5" sx={{ fontWeight: 800 }}>
-              SBA
-            </Typography>
-          </Box>
-          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            <CloseIcon />
+          </IconButton>
+        )}
+
+        {/* Background decoration */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -20,
+            right: -20,
+            width: 80,
+            height: 80,
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.1)',
+          }}
+        />
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: -30,
+            left: -30,
+            width: 100,
+            height: 100,
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.05)',
+          }}
+        />
+
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+          <Avatar
+            sx={{
+              width: 64,
+              height: 64,
+              mb: 2,
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              fontSize: '1.5rem',
+              fontWeight: 800,
+              backdropFilter: 'blur(10px)',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+            }}
+          >
+            SBA
+          </Avatar>
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
             SBA Rooms
           </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.8 }}>
-            Management System
-          </Typography>
+          <Chip
+            label="Management System"
+            size="small"
+            sx={{
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              fontSize: '0.75rem',
+            }}
+          />
         </Box>
-      </motion.div>
+      </Box>
 
       {/* Navigation Menu */}
-      <List sx={{ flexGrow: 1, px: 2, py: 2 }}>
-        {menuItems.map((item, index) => (
-          <motion.div
-            key={item.path}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-          >
-            <ListItem
-              component={NavLink}
-              to={item.path}
-              onClick={isMobile ? handleDrawerToggle : undefined}
-              sx={{
-                borderRadius: 2,
-                mb: 1,
-                color: theme.palette.text.primary,
-                textDecoration: 'none',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  backgroundColor: theme.palette.primary.light + '20',
-                  transform: 'translateX(4px)',
-                },
-                '&.active': {
-                  backgroundColor: theme.palette.primary.main,
-                  color: 'white',
-                  '& .MuiListItemIcon-root': {
-                    color: 'white',
-                  },
-                  '&:hover': {
-                    backgroundColor: theme.palette.primary.dark,
-                  },
-                },
-              }}
+      <Box sx={{ flexGrow: 1, p: 2 }}>
+        <List sx={{ p: 0 }}>
+          {menuItems.map((item, index) => (
+            <motion.div
+              key={item.path}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
             >
-              <ListItemIcon
+              <ListItem
+                component={NavLink}
+                to={item.path}
+                onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  color: theme.palette.text.secondary,
-                  minWidth: 40,
+                  borderRadius: 2,
+                  mb: 1,
+                  mx: 1,
+                  color: theme.palette.text.primary,
+                  textDecoration: 'none',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&:hover': {
+                    backgroundColor: `${item.color}15`,
+                    transform: 'translateX(8px)',
+                    '&::before': {
+                      width: '4px',
+                    },
+                  },
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 0,
+                    backgroundColor: item.color,
+                    transition: 'width 0.3s ease',
+                  },
+                  '&.active': {
+                    backgroundColor: `${item.color}20`,
+                    color: item.color,
+                    fontWeight: 600,
+                    '&::before': {
+                      width: '4px',
+                    },
+                    '& .MuiListItemIcon-root': {
+                      color: item.color,
+                    },
+                    '&:hover': {
+                      backgroundColor: `${item.color}25`,
+                    },
+                  },
                 }}
               >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.text}
-                primaryTypographyProps={{
-                  fontSize: '0.95rem',
-                  fontWeight: 500,
-                }}
-              />
-            </ListItem>
-          </motion.div>
-        ))}
-      </List>
+                <ListItemIcon
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    minWidth: 48,
+                    transition: 'color 0.3s ease',
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                  }}
+                />
+              </ListItem>
+            </motion.div>
+          ))}
+        </List>
+      </Box>
 
-      <Divider />
+      <Divider sx={{ mx: 2 }} />
       
       {/* Footer */}
-      <Box sx={{ p: 2, textAlign: 'center' }}>
-        <Typography variant="caption" color="text.secondary">
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
           © 2025 SBA Rooms
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.7rem', mt: 0.5 }}>
+          Version 1.0.0
         </Typography>
       </Box>
     </Box>
@@ -166,9 +233,12 @@ const SideNavbar = () => {
             zIndex: 1300,
             backgroundColor: theme.palette.primary.main,
             color: 'white',
+            boxShadow: theme.shadows[4],
             '&:hover': {
               backgroundColor: theme.palette.primary.dark,
+              transform: 'scale(1.05)',
             },
+            transition: 'all 0.2s ease',
           }}
         >
           <MenuIcon />
@@ -187,6 +257,7 @@ const SideNavbar = () => {
               boxSizing: 'border-box',
               borderRight: `1px solid ${theme.palette.divider}`,
               backgroundColor: theme.palette.background.paper,
+              boxShadow: theme.shadows[2],
             },
           }}
         >
@@ -201,12 +272,13 @@ const SideNavbar = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             '& .MuiDrawer-paper': {
               width: 280,
               boxSizing: 'border-box',
+              boxShadow: theme.shadows[8],
             },
           }}
         >

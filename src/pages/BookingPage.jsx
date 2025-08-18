@@ -9,8 +9,6 @@ import {
   query,
   where
 } from "firebase/firestore";
-
-// Material UI Imports
 import {
   Container,
   Typography,
@@ -31,52 +29,53 @@ import {
   Divider,
   List,
   ListItem,
-  ListItemText
+  ListItemText,
+  Card,
+  CardContent,
+  Stepper,
+  Step,
+  StepLabel,
+  Avatar,
+  Chip,
+  useTheme,
+  useMediaQuery,
+  LinearProgress,
+  Alert,
 } from "@mui/material";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import {
+  Add as AddIcon,
+  Person as PersonIcon,
+  Hotel as HotelIcon,
+  Payment as PaymentIcon,
+  CheckCircle as CheckIcon,
+  Upload as UploadIcon,
+} from "@mui/icons-material";
+import { motion, AnimatePresence } from 'framer-motion';
 
-// Custom theme using your logo's colors
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#26A69A", // Teal color
-    },
-    secondary: {
-      main: "#424242", // Dark grey
-    },
-  },
-  typography: {
-    h4: {
-      fontWeight: 600,
-    },
-  },
-});
-
-// Style for the modal
 const modalStyle = {
   position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: '90%',
-  maxWidth: 800,
+  width: '95%',
+  maxWidth: 900,
   bgcolor: 'background.paper',
+  borderRadius: 3,
   boxShadow: 24,
-  p: 4,
-  borderRadius: 2,
-  maxHeight: '90vh',
+  p: 0,
+  maxHeight: '95vh',
   overflowY: 'auto'
 };
 
-
 function BookingPage() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
   // Form State
-  const [step, setStep] = useState(1); // Now has 3 steps
+  const [step, setStep] = useState(0);
   const [numRooms, setNumRooms] = useState(1);
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [roomDetails, setRoomDetails] = useState({});
@@ -88,6 +87,8 @@ function BookingPage() {
   const [idProofBase64, setIdProofBase64] = useState('');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const steps = ['Select Rooms', 'Guest & Payment Details', 'Review & Confirm'];
 
   useEffect(() => {
     const roomsCollection = collection(db, "rooms");
@@ -107,7 +108,7 @@ function BookingPage() {
   };
 
   const resetForm = () => {
-    setStep(1);
+    setStep(0);
     setNumRooms(1);
     setSelectedRooms([]);
     setRoomDetails({});
@@ -118,36 +119,40 @@ function BookingPage() {
     setIsSubmitting(false);
   };
 
-  const handleProceedToDetails = () => {
-    if (selectedRooms.length !== parseInt(numRooms, 10)) {
-        alert(`Please select exactly ${numRooms} room(s).`);
-        return;
+  const handleNext = () => {
+    if (step === 0 && selectedRooms.length !== parseInt(numRooms, 10)) {
+      alert(`Please select exactly ${numRooms} room(s).`);
+      return;
     }
-    setStep(2);
+    setStep(step + 1);
+  };
+
+  const handleBack = () => {
+    setStep(step - 1);
   };
 
   const handleRoomSelect = (roomId) => {
     setSelectedRooms(prev => {
-        const newSelection = prev.includes(roomId)
-            ? prev.filter(id => id !== roomId)
-            : [...prev, roomId];
-        
-        newSelection.forEach(id => {
-            if (!roomDetails[id]) {
-                setRoomDetails(prevDetails => ({
-                    ...prevDetails,
-                    [id]: { numberOfPersons: '', amount: commonAmount }
-                }));
-            }
-        });
-        return newSelection;
+      const newSelection = prev.includes(roomId)
+        ? prev.filter(id => id !== roomId)
+        : [...prev, roomId];
+      
+      newSelection.forEach(id => {
+        if (!roomDetails[id]) {
+          setRoomDetails(prevDetails => ({
+            ...prevDetails,
+            [id]: { numberOfPersons: '', amount: commonAmount }
+          }));
+        }
+      });
+      return newSelection;
     });
   };
 
   const handleDetailChange = (roomId, field, value) => {
     setRoomDetails(prev => ({
-        ...prev,
-        [roomId]: { ...prev[roomId], [field]: value }
+      ...prev,
+      [roomId]: { ...prev[roomId], [field]: value }
     }));
   };
 
@@ -155,11 +160,11 @@ function BookingPage() {
     const newAmount = e.target.value;
     setCommonAmount(newAmount);
     setRoomDetails(prevDetails => {
-        const newDetails = { ...prevDetails };
-        selectedRooms.forEach(roomId => {
-            newDetails[roomId] = { ...newDetails[roomId], amount: newAmount };
-        });
-        return newDetails;
+      const newDetails = { ...prevDetails };
+      selectedRooms.forEach(roomId => {
+        newDetails[roomId] = { ...newDetails[roomId], amount: newAmount };
+      });
+      return newDetails;
     });
   };
 
@@ -213,138 +218,436 @@ function BookingPage() {
     }
   };
   
-  // Calculate total amount for the preview
   const totalAmount = selectedRooms.reduce((total, roomId) => {
     const amount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
     return total + amount;
   }, 0);
 
-  return (
-    <ThemeProvider theme={theme}>
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-            <Typography variant="h4" component="h1" color="primary">
-                Booking Management
-            </Typography>
-            <Button variant="contained" color="primary" startIcon={<AddCircleOutlineIcon />} onClick={handleOpenModal}>
-                Add New Booking
-            </Button>
+  if (loading) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+          <LinearProgress sx={{ width: '100%', maxWidth: 400 }} />
         </Box>
-        <Typography variant="body1">Click the button above to start a new booking.</Typography>
-        
-        <Modal open={modalOpen} onClose={handleCloseModal}>
-          <Box sx={modalStyle} component="form" onSubmit={handleSubmit}>
-            {/* Step 1: Room Selection */}
-            {step === 1 && (
-              <>
-                <Typography variant="h5" component="h2" sx={{ mb: 3 }}>Step 1: Select Rooms</Typography>
-                <FormControl fullWidth sx={{ mb: 3 }}>
-                    <InputLabel id="num-rooms-label">How many rooms?</InputLabel>
-                    <Select labelId="num-rooms-label" value={numRooms} label="How many rooms?" onChange={(e) => { setNumRooms(e.target.value); setSelectedRooms([]); }}>
-                        {[...Array(Math.min(10, rooms.length)).keys()].map(n => (<MenuItem key={n + 1} value={n + 1}>{n + 1}</MenuItem>))}
-                    </Select>
-                </FormControl>
-                <Typography variant="subtitle1" gutterBottom>Select Available Rooms ({selectedRooms.length} / {numRooms})</Typography>
-                <Paper variant="outlined" sx={{ p: 2, maxHeight: 200, overflowY: 'auto', mb: 3 }}>
-                    <FormGroup>
-                        {loading ? <CircularProgress /> : rooms.map(room => (<FormControlLabel control={<Checkbox checked={selectedRooms.includes(room.id)} onChange={() => handleRoomSelect(room.id)} disabled={!selectedRooms.includes(room.id) && selectedRooms.length >= numRooms}/>} label={`${room.roomNo} (${room.roomType})`} key={room.id}/>))}
-                    </FormGroup>
-                </Paper>
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Button onClick={handleCloseModal} sx={{ mr: 1 }}>Cancel</Button>
-                    <Button variant="contained" onClick={handleProceedToDetails}>Next</Button>
-                </Box>
-              </>
-            )}
+      </Container>
+    );
+  }
 
-            {/* Step 2: Guest and Payment Details */}
-            {step === 2 && (
-              <>
-                <Typography variant="h5" component="h2" sx={{ mb: 3 }}>Step 2: Add Details</Typography>
-                <Grid container spacing={3}>
-                    <Grid item xs={12} md={5}>
-                        <Typography variant="h6" gutterBottom>Guest Details</Typography>
-                        <TextField label="Guest Name" fullWidth required value={guestName} onChange={e => setGuestName(e.target.value)} sx={{ mb: 2 }} />
-                        <TextField label="Phone Number" type="tel" fullWidth required value={guestPhone} onChange={e => setGuestPhone(e.target.value)} sx={{ mb: 2 }} />
-                        <Button variant="outlined" component="label" fullWidth> Upload ID Proof <input type="file" accept="image/*" hidden onChange={handleFileChange} required /></Button>
-                        {idProofBase64 && <Typography variant="caption" color="green" display="block" mt={1}>ID Proof selected.</Typography>}
+  return (
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1, md: 3 } }}>
+      {/* Header */}
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.primary.main, mb: 1 }}>
+              Booking Management
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Create new bookings and manage guest reservations
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenModal}
+            sx={{
+              borderRadius: 3,
+              px: 4,
+              py: 1.5,
+              textTransform: 'none',
+              fontWeight: 600,
+              boxShadow: theme.shadows[4],
+            }}
+          >
+            New Booking
+          </Button>
+        </Box>
+      </Box>
+
+      {/* Welcome Card */}
+      <Paper
+        sx={{
+          p: 4,
+          borderRadius: 3,
+          background: `linear-gradient(135deg, ${theme.palette.primary.main}15 0%, ${theme.palette.secondary.main}15 100%)`,
+          border: `1px solid ${theme.palette.primary.main}30`,
+          textAlign: 'center',
+        }}
+      >
+        <HotelIcon sx={{ fontSize: 64, color: theme.palette.primary.main, mb: 2 }} />
+        <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: theme.palette.text.primary }}>
+          Ready to Create a New Booking?
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          Click the "New Booking" button above to start the booking process for your guests.
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={handleOpenModal}
+          sx={{
+            borderRadius: 2,
+            px: 3,
+            textTransform: 'none',
+            fontWeight: 600,
+          }}
+        >
+          Get Started
+        </Button>
+      </Paper>
+        
+      {/* Booking Modal */}
+      <Modal open={modalOpen} onClose={handleCloseModal}>
+        <Box sx={modalStyle}>
+          {/* Modal Header */}
+          <Box sx={{ p: 3, borderBottom: `1px solid ${theme.palette.divider}` }}>
+            <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+              Create New Booking
+            </Typography>
+            <Box sx={{ mt: 2 }}>
+              <Stepper activeStep={step} alternativeLabel={!isMobile}>
+                {steps.map((label, index) => (
+                  <Step key={label}>
+                    <StepLabel
+                      StepIconComponent={({ active, completed }) => (
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            bgcolor: completed ? theme.palette.success.main : active ? theme.palette.primary.main : theme.palette.grey[300],
+                            color: 'white',
+                            fontSize: '0.875rem',
+                          }}
+                        >
+                          {completed ? <CheckIcon sx={{ fontSize: '1rem' }} /> : index + 1}
+                        </Avatar>
+                      )}
+                    >
+                      {!isMobile && label}
+                    </StepLabel>
+                  </Step>
+                ))}
+              </Stepper>
+            </Box>
+          </Box>
+
+          {/* Modal Content */}
+          <Box sx={{ p: 3 }}>
+            <AnimatePresence mode="wait">
+              {/* Step 1: Room Selection */}
+              {step === 0 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <HotelIcon color="primary" />
+                    Select Rooms
+                  </Typography>
+                  
+                  <FormControl fullWidth sx={{ mb: 3 }}>
+                    <InputLabel>Number of Rooms</InputLabel>
+                    <Select
+                      value={numRooms}
+                      label="Number of Rooms"
+                      onChange={(e) => { setNumRooms(e.target.value); setSelectedRooms([]); }}
+                    >
+                      {[...Array(Math.min(10, rooms.length)).keys()].map(n => (
+                        <MenuItem key={n + 1} value={n + 1}>{n + 1} Room{n > 0 ? 's' : ''}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+
+                  <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                    Available Rooms ({selectedRooms.length} / {numRooms} selected)
+                  </Typography>
+
+                  <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflowY: 'auto', borderRadius: 2 }}>
+                    {rooms.length > 0 ? (
+                      <Grid container spacing={2}>
+                        {rooms.map(room => (
+                          <Grid item xs={12} sm={6} key={room.id}>
+                            <Card
+                              sx={{
+                                cursor: 'pointer',
+                                border: selectedRooms.includes(room.id) ? `2px solid ${theme.palette.primary.main}` : `1px solid ${theme.palette.divider}`,
+                                bgcolor: selectedRooms.includes(room.id) ? `${theme.palette.primary.main}10` : 'background.paper',
+                                transition: 'all 0.2s ease',
+                                '&:hover': {
+                                  borderColor: theme.palette.primary.main,
+                                },
+                              }}
+                              onClick={() => handleRoomSelect(room.id)}
+                            >
+                              <CardContent sx={{ p: 2 }}>
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={selectedRooms.includes(room.id)}
+                                      disabled={!selectedRooms.includes(room.id) && selectedRooms.length >= numRooms}
+                                    />
+                                  }
+                                  label={
+                                    <Box>
+                                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                        Room {room.roomNo}
+                                      </Typography>
+                                      <Chip
+                                        label={room.roomType}
+                                        size="small"
+                                        sx={{
+                                          bgcolor: theme.palette.secondary.light + '30',
+                                          color: theme.palette.secondary.main,
+                                        }}
+                                      />
+                                    </Box>
+                                  }
+                                />
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        ))}
+                      </Grid>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                        No available rooms found
+                      </Typography>
+                    )}
+                  </Paper>
+                </motion.div>
+              )}
+
+              {/* Step 2: Guest and Payment Details */}
+              {step === 1 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <PersonIcon color="primary" />
+                    Guest & Payment Details
+                  </Typography>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                          Guest Information
+                        </Typography>
+                        <TextField
+                          label="Guest Name"
+                          fullWidth
+                          required
+                          value={guestName}
+                          onChange={e => setGuestName(e.target.value)}
+                          sx={{ mb: 2 }}
+                        />
+                        <TextField
+                          label="Phone Number"
+                          type="tel"
+                          fullWidth
+                          required
+                          value={guestPhone}
+                          onChange={e => setGuestPhone(e.target.value)}
+                          sx={{ mb: 2 }}
+                        />
+                        <Button
+                          variant="outlined"
+                          component="label"
+                          fullWidth
+                          startIcon={<UploadIcon />}
+                          sx={{ textTransform: 'none' }}
+                        >
+                          Upload ID Proof
+                          <input type="file" accept="image/*" hidden onChange={handleFileChange} required />
+                        </Button>
+                        {idProofBase64 && (
+                          <Alert severity="success" sx={{ mt: 1 }}>
+                            ID Proof uploaded successfully
+                          </Alert>
+                        )}
+                      </Paper>
                     </Grid>
-                    <Grid item xs={12} md={7}>
-                        <Typography variant="h6" gutterBottom>Charges & Persons</Typography>
-                        <TextField label="Common Amount (per room)" type="number" fullWidth required value={commonAmount} onChange={handleCommonAmountChange} sx={{ mb: 2 }} />
-                        <Divider sx={{mb: 2}}/>
-                        <Box sx={{ maxHeight: 250, overflowY: 'auto', pr: 1 }}>
-                        {selectedRooms.map(roomId => {
+                    
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                          Room Details & Charges
+                        </Typography>
+                        <TextField
+                          label="Common Amount (per room)"
+                          type="number"
+                          fullWidth
+                          required
+                          value={commonAmount}
+                          onChange={handleCommonAmountChange}
+                          sx={{ mb: 2 }}
+                        />
+                        <Divider sx={{ mb: 2 }} />
+                        <Box sx={{ maxHeight: 200, overflowY: 'auto' }}>
+                          {selectedRooms.map(roomId => {
                             const room = rooms.find(r => r.id === roomId);
                             return (
-                                <Box key={roomId} sx={{ mb: 2 }}>
-                                    <Typography variant="subtitle2" gutterBottom>Room {room.roomNo}</Typography>
-                                    <TextField label={`Persons in Room ${room.roomNo}`} type="number" fullWidth required value={roomDetails[roomId]?.numberOfPersons || ''} onChange={(e) => handleDetailChange(roomId, 'numberOfPersons', e.target.value)} sx={{ mb: 1 }}/>
-                                    <TextField label={`Amount for Room ${room.roomNo}`} type="number" fullWidth value={roomDetails[roomId]?.amount || ''} onChange={(e) => handleDetailChange(roomId, 'amount', e.target.value)}/>
-                                </Box>
+                              <Box key={roomId} sx={{ mb: 2, p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 1 }}>
+                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                  Room {room.roomNo}
+                                </Typography>
+                                <Grid container spacing={2}>
+                                  <Grid item xs={6}>
+                                    <TextField
+                                      label="Persons"
+                                      type="number"
+                                      size="small"
+                                      fullWidth
+                                      required
+                                      value={roomDetails[roomId]?.numberOfPersons || ''}
+                                      onChange={(e) => handleDetailChange(roomId, 'numberOfPersons', e.target.value)}
+                                    />
+                                  </Grid>
+                                  <Grid item xs={6}>
+                                    <TextField
+                                      label="Amount"
+                                      type="number"
+                                      size="small"
+                                      fullWidth
+                                      value={roomDetails[roomId]?.amount || ''}
+                                      onChange={(e) => handleDetailChange(roomId, 'amount', e.target.value)}
+                                    />
+                                  </Grid>
+                                </Grid>
+                              </Box>
                             );
-                        })}
+                          })}
                         </Box>
+                      </Paper>
                     </Grid>
-                </Grid>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-                    <Button onClick={() => setStep(1)}>Back</Button>
-                    <Button variant="contained" onClick={() => setStep(3)}>Preview Booking</Button>
-                </Box>
-              </>
-            )}
+                  </Grid>
+                </motion.div>
+              )}
 
-            {/* ############ START OF NEW PREVIEW STEP ############ */}
-            {step === 3 && (
-                <>
-                    <Typography variant="h5" component="h2" sx={{ mb: 3 }}>Step 3: Confirm Booking</Typography>
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={6}>
-                            <Typography variant="h6" gutterBottom>Guest Details</Typography>
-                            <Typography variant="body1"><strong>Name:</strong> {guestName}</Typography>
-                            <Typography variant="body1"><strong>Phone:</strong> {guestPhone}</Typography>
-                            <Typography variant="h6" gutterBottom sx={{mt: 2}}>ID Proof</Typography>
-                            {idProofBase64 ? 
-                                <Box component="img" src={idProofBase64} alt="ID Proof Preview" sx={{ width: '100%', maxWidth: '250px', border: '1px solid #ddd', borderRadius: '4px' }} /> :
-                                <Typography variant="body2" color="error">No ID proof uploaded.</Typography>
-                            }
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <Typography variant="h6" gutterBottom>Booking Summary</Typography>
-                            <List dense>
-                                {selectedRooms.map(roomId => {
-                                    const room = rooms.find(r => r.id === roomId);
-                                    const finalAmount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
-                                    return (
-                                        <ListItem key={roomId} divider>
-                                            <ListItemText 
-                                                primary={`Room ${room.roomNo}`}
-                                                secondary={`${roomDetails[roomId]?.numberOfPersons || 1} Person(s)`}
-                                            />
-                                            <Typography variant="body1">₹{finalAmount.toFixed(2)}</Typography>
-                                        </ListItem>
-                                    );
-                                })}
-                                <ListItem>
-                                    <ListItemText primary={<Typography variant="h6">Total</Typography>} />
-                                    <Typography variant="h6">₹{totalAmount.toFixed(2)}</Typography>
-                                </ListItem>
-                            </List>
-                        </Grid>
+              {/* Step 3: Review & Confirm */}
+              {step === 2 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckIcon color="primary" />
+                    Review & Confirm Booking
+                  </Typography>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 3, borderRadius: 2 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                          Guest Details
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 1 }}>
+                          <strong>Name:</strong> {guestName}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 2 }}>
+                          <strong>Phone:</strong> {guestPhone}
+                        </Typography>
+                        {idProofBase64 && (
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                              ID Proof:
+                            </Typography>
+                            <Box
+                              component="img"
+                              src={idProofBase64}
+                              alt="ID Proof Preview"
+                              sx={{
+                                width: '100%',
+                                maxWidth: 200,
+                                height: 'auto',
+                                border: `1px solid ${theme.palette.divider}`,
+                                borderRadius: 1,
+                              }}
+                            />
+                          </Box>
+                        )}
+                      </Paper>
                     </Grid>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-                        <Button onClick={() => setStep(2)}>Back to Edit</Button>
-                        <Button type="submit" variant="contained" disabled={isSubmitting}>
-                            {isSubmitting ? <CircularProgress size={24} /> : 'Confirm & Book Now'}
-                        </Button>
-                    </Box>
-                </>
-            )}
-            {/* ############ END OF NEW PREVIEW STEP ############ */}
+                    
+                    <Grid item xs={12} md={6}>
+                      <Paper sx={{ p: 3, borderRadius: 2 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                          Booking Summary
+                        </Typography>
+                        <List dense>
+                          {selectedRooms.map(roomId => {
+                            const room = rooms.find(r => r.id === roomId);
+                            const finalAmount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
+                            return (
+                              <ListItem key={roomId} sx={{ px: 0 }}>
+                                <ListItemText
+                                  primary={`Room ${room.roomNo}`}
+                                  secondary={`${roomDetails[roomId]?.numberOfPersons || 1} Person(s)`}
+                                />
+                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                  ₹{finalAmount.toFixed(2)}
+                                </Typography>
+                              </ListItem>
+                            );
+                          })}
+                          <Divider sx={{ my: 1 }} />
+                          <ListItem sx={{ px: 0 }}>
+                            <ListItemText
+                              primary={<Typography variant="h6" sx={{ fontWeight: 700 }}>Total Amount</Typography>}
+                            />
+                            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                              ₹{totalAmount.toFixed(2)}
+                            </Typography>
+                          </ListItem>
+                        </List>
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Box>
-        </Modal>
-      </Container>
-    </ThemeProvider>
+
+          {/* Modal Footer */}
+          <Box sx={{ p: 3, borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', justifyContent: 'space-between' }}>
+            <Button
+              onClick={step === 0 ? handleCloseModal : handleBack}
+              sx={{ textTransform: 'none', borderRadius: 2 }}
+            >
+              {step === 0 ? 'Cancel' : 'Back'}
+            </Button>
+            
+            {step < steps.length - 1 ? (
+              <Button
+                variant="contained"
+                onClick={handleNext}
+                sx={{ textTransform: 'none', borderRadius: 2, px: 4 }}
+              >
+                Next
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                sx={{ textTransform: 'none', borderRadius: 2, px: 4 }}
+              >
+                {isSubmitting ? <CircularProgress size={24} /> : 'Confirm Booking'}
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </Modal>
+    </Container>
   );
 }
 
