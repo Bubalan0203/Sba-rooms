@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { db } from "../config/firebase";
+import { db } from "../config/firebase"; // Restored original firebase import
 import { collection, onSnapshot } from "firebase/firestore";
 import {
   Box,
@@ -20,6 +20,8 @@ import {
   TableHead,
   TableRow,
   LinearProgress,
+  ThemeProvider,
+  createTheme,
 } from '@mui/material';
 import {
   TrendingUp as TrendingUpIcon,
@@ -64,27 +66,30 @@ const KPICard = ({ title, value, icon, color, trend }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       whileHover={{ y: -4 }}
+      style={{ height: '100%' }}
     >
       <Card
         sx={{
           height: '100%',
-          background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
+          background: `linear-gradient(135deg, ${color}1A 0%, ${color}05 100%)`,
           border: `1px solid ${color}30`,
           transition: 'all 0.3s ease',
+          display: 'flex',
+          flexDirection: 'column',
           '&:hover': {
             boxShadow: theme.shadows[8],
             borderColor: color,
           },
         }}
       >
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 }, flexGrow: 1 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
             <Avatar
               sx={{
                 bgcolor: `${color}20`,
                 color: color,
-                width: 56,
-                height: 56,
+                width: { xs: 48, sm: 56 },
+                height: { xs: 48, sm: 56 },
               }}
             >
               {icon}
@@ -108,6 +113,7 @@ const KPICard = ({ title, value, icon, color, trend }) => {
               fontWeight: 700,
               color: theme.palette.text.primary,
               mb: 1,
+              fontSize: { xs: '1.5rem', sm: '2.125rem' },
             }}
           >
             {value}
@@ -129,8 +135,6 @@ const KPICard = ({ title, value, icon, color, trend }) => {
 
 const DashboardPage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const isTablet = useMediaQuery(theme.breakpoints.down('lg'));
   const [allBookings, setAllBookings] = useState([]);
   const [dateRange, setDateRange] = useState([subDays(new Date(), 30), new Date()]);
   const [startDate, endDate] = dateRange;
@@ -146,6 +150,9 @@ const DashboardPage = () => {
         ...doc.data(),
       }));
       setAllBookings(bookingsData);
+      setLoading(false);
+    }, (error) => {
+      console.error("Firestore snapshot error:", error);
       setLoading(false);
     });
     return () => unsubscribe();
@@ -172,7 +179,7 @@ const DashboardPage = () => {
     bookingsByRoom,
     performanceByRoom,
   } = useMemo(() => {
-    if (filteredBookings.length === 0) {
+    if (filteredBookings.length === 0 || !startDate || !endDate) {
       return {
         totalRevenue: 0,
         totalBookings: 0,
@@ -197,6 +204,7 @@ const DashboardPage = () => {
     const performanceByRoomData = {};
 
     filteredBookings.forEach((booking) => {
+      if (!booking.checkIn || !booking.checkIn.toDate) return;
       const dateStr = format(booking.checkIn.toDate(), "yyyy-MM-dd");
       revenueByDate[dateStr] = (revenueByDate[dateStr] || 0) + booking.amount;
 
@@ -241,7 +249,7 @@ const DashboardPage = () => {
       data: revenueOverTime.data,
       borderColor: theme.palette.primary.main,
       backgroundColor: `${theme.palette.primary.main}20`,
-      borderWidth: 3,
+      borderWidth: 2,
       fill: true,
       tension: 0.4,
     }],
@@ -253,7 +261,7 @@ const DashboardPage = () => {
       label: "# of Bookings",
       data: bookingsByRoom.data,
       backgroundColor: theme.palette.secondary.main,
-      borderRadius: 8,
+      borderRadius: 4,
     }],
   };
 
@@ -261,21 +269,11 @@ const DashboardPage = () => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
     },
     scales: {
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        grid: {
-          color: theme.palette.divider,
-        },
-      },
+      x: { grid: { display: false } },
+      y: { grid: { color: theme.palette.divider } },
     },
   };
 
@@ -290,66 +288,50 @@ const DashboardPage = () => {
   }
 
   return (
-    <Container 
-      maxWidth="xl" 
-      sx={{ 
-        py: { xs: 2, sm: 3, md: 4 }, 
-        px: { xs: 2, sm: 3, md: 4 },
-        ml: { xs: 0, md: isMobile ? 0 : '280px' },
-        width: { xs: '100%', md: isMobile ? '100%' : 'calc(100% - 280px)' },
-        maxWidth: 'none',
-      }}
-    >
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ 
           display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' }, 
+          flexDirection: { xs: 'column', md: 'row' }, 
           justifyContent: 'space-between', 
-          alignItems: { xs: 'flex-start', sm: 'center' }, 
-          gap: { xs: 2, sm: 3 },
-          mb: { xs: 2, sm: 3 },
+          alignItems: { xs: 'flex-start', md: 'center' }, 
+          gap: 2,
         }}>
           <Box>
             <Typography 
               variant="h4" 
               sx={{ 
-                fontWeight: 800, 
+                fontWeight: 700, 
                 color: theme.palette.text.primary, 
-                mb: 1,
-                fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem' },
+                mb: 0.5,
+                fontSize: { xs: '1.75rem', sm: '2.25rem' },
               }}
             >
-              Dashboard Overview
+              Dashboard
             </Typography>
-            <Typography 
-              variant="body1" 
-              color="text.secondary"
-              sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}
-            >
-              Monitor your hotel's performance and key metrics
+            <Typography variant="body1" color="text.secondary">
+              Key performance metrics overview
             </Typography>
           </Box>
           <Paper
             sx={{
-              p: { xs: 1.5, sm: 2 },
-              borderRadius: 3,
-              border: `1px solid rgba(0, 0, 0, 0.08)`,
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-              minWidth: { xs: '100%', sm: 'auto' },
-              '& .react-datepicker-wrapper': {
-                width: '100%',
-              },
+              p: 1,
+              borderRadius: 2,
+              border: `1px solid ${theme.palette.divider}`,
+              width: { xs: '100%', md: 'auto' },
+              '& .react-datepicker-wrapper': { width: '100%' },
               '& .react-datepicker__input-container input': {
                 border: 'none',
                 outline: 'none',
-                fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                fontWeight: 600,
+                width: '100%',
+                fontSize: '0.875rem',
+                fontWeight: 500,
                 color: theme.palette.text.primary,
                 backgroundColor: 'transparent',
                 cursor: 'pointer',
-                minWidth: { xs: '180px', sm: '200px' },
-                textAlign: { xs: 'center', sm: 'left' },
+                textAlign: { xs: 'center', md: 'left' },
+                padding: '8px',
               },
             }}
           >
@@ -368,7 +350,7 @@ const DashboardPage = () => {
 
       {/* KPI Cards */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 3, sm: 4 } }}>
-        <Grid item xs={6} sm={6} lg={3}>
+        <Grid item xs={6} md={3}>
           <KPICard
             title="Total Revenue"
             value={`₹${totalRevenue.toLocaleString()}`}
@@ -377,7 +359,7 @@ const DashboardPage = () => {
             trend="+12%"
           />
         </Grid>
-        <Grid item xs={6} sm={6} lg={3}>
+        <Grid item xs={6} md={3}>
           <KPICard
             title="Total Bookings"
             value={totalBookings}
@@ -386,7 +368,7 @@ const DashboardPage = () => {
             trend="+8%"
           />
         </Grid>
-        <Grid item xs={6} sm={6} lg={3}>
+        <Grid item xs={6} md={3}>
           <KPICard
             title="Occupancy Rate"
             value={`${occupancyRate.toFixed(1)}%`}
@@ -395,7 +377,7 @@ const DashboardPage = () => {
             trend="+5%"
           />
         </Grid>
-        <Grid item xs={6} sm={6} lg={3}>
+        <Grid item xs={6} md={3}>
           <KPICard
             title="Avg. Daily Rate"
             value={`₹${averageDailyRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
@@ -407,62 +389,22 @@ const DashboardPage = () => {
       </Grid>
 
       {/* Charts */}
-      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 3, sm: 4 } }}>
-        <Grid item xs={12} lg={isTablet ? 12 : 8}>
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Paper sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              height: { xs: 300, sm: 350, md: 400 }, 
-              borderRadius: 4, 
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-              border: '1px solid rgba(0, 0, 0, 0.05)',
-            }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 700, 
-                  mb: { xs: 2, sm: 3 }, 
-                  color: theme.palette.text.primary,
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' },
-                }}
-              >
-                Revenue Trend
-              </Typography>
-              <Box sx={{ height: { xs: 220, sm: 270, md: 300 } }}>
+      <Grid container spacing={{ xs: 3, md: 3 }} sx={{ mb: { xs: 3, sm: 4 } }}>
+        <Grid item xs={12} lg={7}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, height: { xs: 300, md: 400 }, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>Revenue Trend</Typography>
+              <Box sx={{ height: { xs: 220, md: 320 } }}>
                 <Line data={lineChartData} options={chartOptions} />
               </Box>
             </Paper>
           </motion.div>
         </Grid>
-        <Grid item xs={12} lg={isTablet ? 12 : 4}>
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <Paper sx={{ 
-              p: { xs: 2, sm: 3 }, 
-              height: { xs: 300, sm: 350, md: 400 }, 
-              borderRadius: 4, 
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-              border: '1px solid rgba(0, 0, 0, 0.05)',
-            }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 700, 
-                  mb: { xs: 2, sm: 3 }, 
-                  color: theme.palette.text.primary,
-                  fontSize: { xs: '1.1rem', sm: '1.25rem' },
-                }}
-              >
-                Bookings by Room
-              </Typography>
-              <Box sx={{ height: { xs: 220, sm: 270, md: 300 } }}>
+        <Grid item xs={12} lg={5}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, height: { xs: 300, md: 400 }, borderRadius: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>Bookings by Room</Typography>
+              <Box sx={{ height: { xs: 220, md: 320 } }}>
                 <Bar data={barChartData} options={chartOptions} />
               </Box>
             </Paper>
@@ -471,177 +413,53 @@ const DashboardPage = () => {
       </Grid>
 
       {/* Performance Table */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        <Paper sx={{ 
-          borderRadius: 4, 
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', 
-          overflow: 'hidden',
-          border: '1px solid rgba(0, 0, 0, 0.05)',
-        }}>
-          <Box sx={{ 
-            p: { xs: 2, sm: 3 }, 
-            borderBottom: `1px solid rgba(0, 0, 0, 0.08)`,
-            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(16, 185, 129, 0.05) 100%)',
-          }}>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                fontWeight: 700, 
-                color: theme.palette.text.primary,
-                fontSize: { xs: '1.1rem', sm: '1.25rem' },
-                mb: 0.5,
-              }}
-            >
-              Room Performance
-            </Typography>
-            <Typography 
-              variant="body2" 
-              color="text.secondary"
-              sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-            >
-              Detailed breakdown of bookings and revenue per room
-            </Typography>
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>
+        <Paper sx={{ borderRadius: 3, overflow: 'hidden' }}>
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>Room Performance</Typography>
           </Box>
-          <TableContainer sx={{ maxHeight: { xs: 400, sm: 500 } }}>
+          <TableContainer>
             <Table>
               <TableHead>
-                <TableRow sx={{ bgcolor: 'rgba(248, 250, 252, 0.8)' }}>
-                  <TableCell sx={{ 
-                    fontWeight: 700, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    py: { xs: 1.5, sm: 2 },
-                  }}>
-                    Room No.
-                  </TableCell>
-                  <TableCell sx={{ 
-                    fontWeight: 700, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    display: { xs: 'none', sm: 'table-cell' },
-                  }}>
-                    Bookings
-                  </TableCell>
-                  <TableCell sx={{ 
-                    fontWeight: 700, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                  }}>
-                    Revenue
-                  </TableCell>
-                  <TableCell sx={{ 
-                    fontWeight: 700, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    display: { xs: 'none', md: 'table-cell' },
-                  }}>
-                    Performance
-                  </TableCell>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>Room No.</TableCell>
+                  <TableCell sx={{ fontWeight: 600, display: { xs: 'none', sm: 'table-cell' } }}>Bookings</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>Revenue</TableCell>
+                  <TableCell sx={{ fontWeight: 600, display: { xs: 'none', md: 'table-cell' } }}>Performance</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {performanceByRoom.length > 0 ? (
                   performanceByRoom.map((room, index) => (
-                    <TableRow
-                      key={room.roomNo}
-                      sx={{
-                        '&:hover': { bgcolor: 'rgba(37, 99, 235, 0.04)' },
-                        borderLeft: index === 0 ? `4px solid ${theme.palette.success.main}` : '4px solid transparent',
-                        transition: 'all 0.2s ease',
-                      }}
-                    >
-                      <TableCell sx={{ py: { xs: 1.5, sm: 2 } }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ 
-                            width: { xs: 28, sm: 32 }, 
-                            height: { xs: 28, sm: 32 }, 
-                            bgcolor: theme.palette.primary.main, 
-                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                            fontWeight: 700,
-                          }}>
-                            {room.roomNo}
-                          </Avatar>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
-                              fontWeight: 600,
-                              fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                            }}
-                          >
-                            Room {room.roomNo}
-                          </Typography>
-                        </Box>
+                    <TableRow key={room.roomNo} sx={{ '&:hover': { bgcolor: 'action.hover' } }}>
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={500}>Room {room.roomNo}</Typography>
                       </TableCell>
                       <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                        <Chip
-                          label={room.totalBookings}
-                          size="small"
-                          sx={{
-                            bgcolor: `${theme.palette.primary.main}20`,
-                            color: theme.palette.primary.main,
-                            fontWeight: 700,
-                            fontSize: '0.75rem',
-                          }}
-                        />
+                        {room.totalBookings}
                       </TableCell>
-                      <TableCell sx={{ 
-                        fontWeight: 700, 
-                        color: theme.palette.success.main,
-                        fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                      }}>
-                        ₹{room.totalRevenue.toLocaleString()}
-                        <Typography 
-                          variant="caption" 
-                          sx={{ 
-                            display: { xs: 'block', sm: 'none' },
-                            color: theme.palette.text.secondary,
-                            fontSize: '0.7rem',
-                          }}
-                        >
+                      <TableCell>
+                        <Typography variant="body2" fontWeight={500} color="success.main">
+                          ₹{room.totalRevenue.toLocaleString()}
+                        </Typography>
+                         {/* Show bookings count on mobile under revenue */}
+                        <Typography variant="caption" sx={{ display: { xs: 'block', sm: 'none' }, color: 'text.secondary' }}>
                           {room.totalBookings} bookings
                         </Typography>
                       </TableCell>
                       <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={Math.min((room.totalRevenue / Math.max(...performanceByRoom.map(r => r.totalRevenue))) * 100, 100)}
-                            sx={{
-                              width: { sm: 60, md: 80 },
-                              height: 8,
-                              borderRadius: 4,
-                              bgcolor: theme.palette.grey[200],
-                              '& .MuiLinearProgress-bar': {
-                                borderRadius: 4,
-                                bgcolor: index === 0 ? theme.palette.success.main : theme.palette.primary.main,
-                              },
-                            }}
-                          />
-                          <Typography 
-                            variant="caption" 
-                            color="text.secondary"
-                            sx={{ fontWeight: 600, fontSize: '0.75rem' }}
-                          >
-                            {Math.round((room.totalRevenue / Math.max(...performanceByRoom.map(r => r.totalRevenue))) * 100)}%
-                          </Typography>
-                        </Box>
+                        <LinearProgress
+                          variant="determinate"
+                          value={Math.min((room.totalRevenue / Math.max(...performanceByRoom.map(r => r.totalRevenue))) * 100, 100)}
+                          sx={{ height: 6, borderRadius: 3 }}
+                        />
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} sx={{ textAlign: 'center', py: { xs: 3, sm: 4 } }}>
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary"
-                        sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                      >
-                        No performance data available for the selected period
-                      </Typography>
+                    <TableCell colSpan={4} sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography color="text.secondary">No data for the selected period</Typography>
                     </TableCell>
                   </TableRow>
                 )}
@@ -654,4 +472,26 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+// The App wrapper is for standalone testing. You can integrate DashboardPage directly into your app's routing.
+export default function App() {
+    const theme = createTheme({
+        palette: {
+          primary: { main: '#1976d2' },
+          secondary: { main: '#dc004e' },
+          success: { main: '#2e7d32' },
+          warning: { main: '#ed6c02' },
+        },
+        typography: {
+          fontFamily: 'Roboto, sans-serif',
+        },
+        shape: {
+          borderRadius: 12,
+        },
+      });
+
+    return (
+        <ThemeProvider theme={theme}>
+            <DashboardPage />
+        </ThemeProvider>
+    )
+}

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+// Make sure you have a valid 'db' export from your Firebase config file.
 import { db } from "../config/firebase";
 import {
   collection,
@@ -39,6 +40,8 @@ import {
   Divider,
   Avatar,
   LinearProgress,
+  ThemeProvider,
+  createTheme,
 } from "@mui/material";
 import {
   Edit as EditIcon,
@@ -52,9 +55,11 @@ import {
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from 'framer-motion';
 
+
 function RoomsPage() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  
   const [rooms, setRooms] = useState([]);
   const [roomNo, setRoomNo] = useState("");
   const [roomType, setRoomType] = useState("AC");
@@ -64,8 +69,8 @@ function RoomsPage() {
   const [roomToDelete, setRoomToDelete] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
+  // --- Real Firebase Firestore connection ---
   const roomsCollection = collection(db, "rooms");
-
   useEffect(() => {
     const q = query(roomsCollection, orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -78,6 +83,7 @@ function RoomsPage() {
     });
     return unsubscribe;
   }, []);
+  
 
   const resetForm = () => {
     setRoomNo("");
@@ -113,6 +119,7 @@ function RoomsPage() {
     setRoomNo(room.roomNo);
     setRoomType(room.roomType);
     setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOpenDeleteDialog = (id) => {
@@ -155,23 +162,25 @@ function RoomsPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1, md: 3 } }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.primary.main, mb: 1 }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: theme.palette.primary.main, mb: 1 }}>
               Room Management
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Manage your hotel rooms and their availability
+              Manage your hotel rooms and their availability.
             </Typography>
           </Box>
+          {/* Hide the button on mobile screens, show the FAB instead */}
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setShowForm(true)}
             sx={{
+              display: { xs: 'none', md: 'inline-flex' }, // Key change for responsiveness
               borderRadius: 3,
               px: 3,
               py: 1.5,
@@ -189,27 +198,27 @@ function RoomsPage() {
       <AnimatePresence>
         {showForm && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -20, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -20, height: 0 }}
             transition={{ duration: 0.3 }}
           >
             <Paper
               elevation={4}
               sx={{
-                p: 4,
+                p: { xs: 2, sm: 3, md: 4 }, // Responsive padding
                 mb: 4,
                 borderRadius: 3,
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}10 0%, ${theme.palette.secondary.main}10 100%)`,
-                border: `1px solid ${theme.palette.primary.main}30`,
+                background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}10 100%)`,
+                border: `1px solid ${theme.palette.divider}`,
               }}
             >
               <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
                 {editId ? "Edit Room" : "Add New Room"}
               </Typography>
               <Box component="form" onSubmit={handleSubmit}>
-                <Grid container spacing={3} alignItems="center">
-                  <Grid item xs={12} sm={4}>
+                <Grid container spacing={{xs: 2, md: 3}} alignItems="center">
+                  <Grid item xs={12} md={4}>
                     <TextField
                       label="Room Number"
                       variant="outlined"
@@ -217,37 +226,31 @@ function RoomsPage() {
                       onChange={(e) => setRoomNo(e.target.value)}
                       required
                       fullWidth
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: 2,
-                        },
-                      }}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+                  <Grid item xs={12} md={4}>
                     <FormControl fullWidth variant="outlined">
                       <InputLabel>Room Type</InputLabel>
                       <Select
                         value={roomType}
                         onChange={(e) => setRoomType(e.target.value)}
                         label="Room Type"
-                        sx={{
-                          borderRadius: 2,
-                        }}
                       >
                         <MenuItem value="AC">AC Room</MenuItem>
                         <MenuItem value="Non-AC">Non-AC Room</MenuItem>
                       </Select>
                     </FormControl>
                   </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Grid item xs={12} md={4}>
+                    {/* Responsive button group */}
+                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
                       <Button
                         type="submit"
                         variant="contained"
+                        fullWidth={{ xs: true, sm: false }} // Full width on mobile
                         sx={{
-                          borderRadius: 2,
                           px: 4,
+                          py: 1.5,
                           textTransform: 'none',
                           fontWeight: 600,
                         }}
@@ -257,9 +260,10 @@ function RoomsPage() {
                       <Button
                         variant="outlined"
                         onClick={resetForm}
+                        fullWidth={{ xs: true, sm: false }} // Full width on mobile
                         sx={{
-                          borderRadius: 2,
                           px: 3,
+                          py: 1.5,
                           textTransform: 'none',
                         }}
                       >
@@ -281,14 +285,15 @@ function RoomsPage() {
         </Typography>
         
         {rooms.length > 0 ? (
-          <Grid container spacing={3}>
+          <Grid container spacing={{ xs: 2, md: 3 }}>
             {rooms.map((room, index) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  whileHover={{ y: -4 }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                  style={{ height: '100%' }}
                 >
                   <Card
                     sx={{
@@ -296,76 +301,52 @@ function RoomsPage() {
                       borderRadius: 3,
                       boxShadow: theme.shadows[2],
                       transition: 'all 0.3s ease',
-                      border: `2px solid ${getStatusColor(room.status)}20`,
+                      border: `1px solid ${theme.palette.divider}`,
+                      borderLeft: `5px solid ${getStatusColor(room.status)}`,
+                      display: 'flex',
+                      flexDirection: 'column',
                       '&:hover': {
                         boxShadow: theme.shadows[8],
                         borderColor: getStatusColor(room.status),
                       },
                     }}
                   >
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ p: 2, flexGrow: 1 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                        <Avatar
-                          sx={{
-                            bgcolor: `${theme.palette.primary.main}20`,
-                            color: theme.palette.primary.main,
-                            width: 48,
-                            height: 48,
-                          }}
-                        >
+                        <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
                           <HotelIcon />
                         </Avatar>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {getStatusIcon(room.status)}
-                        </Box>
+                        <Chip
+                          icon={getStatusIcon(room.status)}
+                          label={room.status}
+                          size="small"
+                          sx={{
+                            bgcolor: `${getStatusColor(room.status)}20`,
+                            color: getStatusColor(room.status),
+                            fontWeight: 600,
+                          }}
+                        />
                       </Box>
                       
                       <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
                         Room {room.roomNo}
                       </Typography>
                       
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {getRoomIcon(room.roomType)}
                         <Typography variant="body2" color="text.secondary">
                           {room.roomType}
                         </Typography>
                       </Box>
-                      
-                      <Chip
-                        label={room.status}
-                        size="small"
-                        sx={{
-                          bgcolor: `${getStatusColor(room.status)}20`,
-                          color: getStatusColor(room.status),
-                          fontWeight: 600,
-                          borderRadius: 2,
-                        }}
-                      />
                     </CardContent>
                     
                     <Divider />
                     
-                    <CardActions sx={{ p: 2, justifyContent: 'flex-end' }}>
-                      <IconButton
-                        onClick={() => handleEdit(room)}
-                        sx={{
-                          color: theme.palette.primary.main,
-                          '&:hover': {
-                            bgcolor: `${theme.palette.primary.main}20`,
-                          },
-                        }}
-                      >
+                    <CardActions sx={{ p: 1, justifyContent: 'flex-end' }}>
+                      <IconButton onClick={() => handleEdit(room)} aria-label="edit room" sx={{ color: 'primary.main' }}>
                         <EditIcon />
                       </IconButton>
-                      <IconButton
-                        onClick={() => handleOpenDeleteDialog(room.id)}
-                        sx={{
-                          color: theme.palette.error.main,
-                          '&:hover': {
-                            bgcolor: `${theme.palette.error.main}20`,
-                          },
-                        }}
-                      >
+                      <IconButton onClick={() => handleOpenDeleteDialog(room.id)} aria-label="delete room" sx={{ color: 'error.main' }}>
                         <DeleteIcon />
                       </IconButton>
                     </CardActions>
@@ -377,30 +358,24 @@ function RoomsPage() {
         ) : (
           <Paper
             sx={{
-              p: 6,
+              p: { xs: 3, sm: 6 }, // Responsive padding
               textAlign: 'center',
               borderRadius: 3,
-              bgcolor: theme.palette.grey[50],
+              bgcolor: 'grey.50',
               border: `2px dashed ${theme.palette.grey[300]}`,
             }}
           >
-            <HotelIcon sx={{ fontSize: 64, color: theme.palette.grey[400], mb: 2 }} />
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: theme.palette.text.secondary }}>
+            <HotelIcon sx={{ fontSize: { xs: 48, sm: 64 }, color: 'grey.400', mb: 2 }} />
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.secondary' }}>
               No rooms found
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Get started by adding your first room
+              Get started by adding your first room.
             </Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => setShowForm(true)}
-              sx={{
-                borderRadius: 2,
-                px: 3,
-                textTransform: 'none',
-                fontWeight: 600,
-              }}
             >
               Add First Room
             </Button>
@@ -412,12 +387,7 @@ function RoomsPage() {
       <Dialog
         open={openDeleteDialog}
         onClose={handleCloseDeleteDialog}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            p: 1,
-          },
-        }}
+        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
       >
         <DialogTitle sx={{ fontWeight: 600 }}>
           Confirm Deletion
@@ -427,25 +397,11 @@ function RoomsPage() {
             Are you sure you want to permanently delete this room? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 1 }}>
-          <Button
-            onClick={handleCloseDeleteDialog}
-            sx={{
-              textTransform: 'none',
-              borderRadius: 2,
-            }}
-          >
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={handleCloseDeleteDialog}>
             Cancel
           </Button>
-          <Button
-            onClick={confirmDelete}
-            variant="contained"
-            color="error"
-            sx={{
-              textTransform: 'none',
-              borderRadius: 2,
-            }}
-          >
+          <Button onClick={confirmDelete} variant="contained" color="error">
             Delete
           </Button>
         </DialogActions>
@@ -456,7 +412,10 @@ function RoomsPage() {
         <Fab
           color="primary"
           aria-label="add room"
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            setShowForm(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
           sx={{
             position: 'fixed',
             bottom: 24,
@@ -471,4 +430,29 @@ function RoomsPage() {
   );
 }
 
-export default RoomsPage;
+// To make this a runnable standalone component, we wrap it in a ThemeProvider.
+// In your actual app, you might have a global ThemeProvider already.
+export default function App() {
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: '#1976d2',
+      },
+      secondary: {
+        main: '#dc004e',
+      },
+    },
+    typography: {
+      fontFamily: 'Roboto, sans-serif',
+    },
+    shape: {
+      borderRadius: 12,
+    },
+  });
+
+  return (
+    <ThemeProvider theme={theme}>
+      <RoomsPage />
+    </ThemeProvider>
+  );
+}
