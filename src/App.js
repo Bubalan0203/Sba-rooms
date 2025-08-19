@@ -51,13 +51,15 @@ const styles = {
     display: 'flex',
     flexDirection: 'row',
     minHeight: '100vh',
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f1f5f9',
   },
   mainContent: {
     flex: 1, // Takes up the remaining space
     padding: 0,
-    backgroundColor: '#f8fafc',
+    backgroundColor: '#f1f5f9',
     overflow: 'auto',
+    marginLeft: { xs: 0, md: '280px' },
+    transition: 'margin-left 0.3s ease',
   },
 };
 

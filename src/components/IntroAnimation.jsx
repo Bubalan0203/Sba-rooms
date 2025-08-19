@@ -39,7 +39,7 @@ const IntroAnimation = ({ onComplete, children }) => {
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
                 overflow: 'hidden',
               }}
             >
@@ -50,8 +50,8 @@ const IntroAnimation = ({ onComplete, children }) => {
                 transition={{ duration: 2, ease: "easeInOut" }}
                 style={{
                   position: 'absolute',
-                  width: '300px',
-                  height: '300px',
+                  width: 'min(300px, 40vw)',
+                  height: 'min(300px, 40vw)',
                   borderRadius: '50%',
                   background: 'rgba(255, 255, 255, 0.05)',
                   top: '20%',
@@ -64,8 +64,8 @@ const IntroAnimation = ({ onComplete, children }) => {
                 transition={{ duration: 2.5, ease: "easeInOut", delay: 0.2 }}
                 style={{
                   position: 'absolute',
-                  width: '200px',
-                  height: '200px',
+                  width: 'min(200px, 30vw)',
+                  height: 'min(200px, 30vw)',
                   borderRadius: '50%',
                   background: 'rgba(255, 255, 255, 0.03)',
                   bottom: '20%',
@@ -86,17 +86,17 @@ const IntroAnimation = ({ onComplete, children }) => {
               >
                 <Box
                   sx={{
-                    width: { xs: 140, sm: 160, md: 180 },
-                    height: { xs: 140, sm: 160, md: 180 },
+                    width: { xs: 120, sm: 140, md: 160, lg: 180 },
+                    height: { xs: 120, sm: 140, md: 160, lg: 180 },
                     borderRadius: '50%',
                     background: 'rgba(255, 255, 255, 0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    mb: 3,
+                    mb: { xs: 2, sm: 3 },
                     backdropFilter: 'blur(20px)',
                     border: '3px solid rgba(255, 255, 255, 0.3)',
-                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+                    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
                   }}
                 >
                   <motion.div
@@ -109,7 +109,7 @@ const IntroAnimation = ({ onComplete, children }) => {
                       sx={{
                         color: 'white',
                         fontWeight: 900,
-                        fontSize: { xs: '3rem', sm: '3.5rem', md: '4rem' },
+                        fontSize: { xs: '2.5rem', sm: '3rem', md: '3.5rem', lg: '4rem' },
                         textShadow: '0 4px 8px rgba(0,0,0,0.3)',
                         letterSpacing: '0.05em',
                       }}
@@ -131,10 +131,11 @@ const IntroAnimation = ({ onComplete, children }) => {
                   sx={{
                     color: 'white',
                     fontWeight: 700,
-                    mb: 1,
+                    mb: { xs: 0.5, sm: 1 },
                     textAlign: 'center',
                     textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                    fontSize: { xs: '1.75rem', sm: '2rem', md: '2.5rem', lg: '3rem' },
+                    px: 2,
                   }}
                 >
                   SBA Rooms
@@ -153,8 +154,9 @@ const IntroAnimation = ({ onComplete, children }) => {
                     color: 'rgba(255, 255, 255, 0.9)',
                     fontWeight: 400,
                     textAlign: 'center',
-                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                    fontSize: { xs: '0.9rem', sm: '1rem', md: '1.25rem' },
                     letterSpacing: '0.02em',
+                    px: 2,
                   }}
                 >
                   Your Comfort, Our Priority
@@ -168,9 +170,9 @@ const IntroAnimation = ({ onComplete, children }) => {
                 transition={{ delay: 1.6, duration: 0.5 }}
                 style={{
                   position: 'absolute',
-                  bottom: '15%',
+                  bottom: '12%',
                   display: 'flex',
-                  gap: '8px',
+                  gap: '6px',
                 }}
               >
                 {[0, 1, 2].map((i) => (
@@ -185,8 +187,8 @@ const IntroAnimation = ({ onComplete, children }) => {
                       ease: "easeInOut",
                     }}
                     style={{
-                      width: '12px',
-                      height: '12px',
+                      width: '10px',
+                      height: '10px',
                       borderRadius: '50%',
                       backgroundColor: 'rgba(255, 255, 255, 0.8)',
                     }}
