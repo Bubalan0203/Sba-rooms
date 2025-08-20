@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { db } from "../config/firebase";
+import styled from "styled-components";
 import {
   collection,
   onSnapshot,
@@ -7,69 +8,24 @@ import {
   runTransaction,
   serverTimestamp,
   query,
-  where
+  where,
 } from "firebase/firestore";
 import {
   Container,
-  Typography,
+  Row,
+  Col,
   Button,
   Modal,
-  Box,
-  Paper,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  CircularProgress,
-  Grid,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
+  Form,
   Card,
-  CardContent,
-  Stepper,
-  Step,
-  StepLabel,
-  Avatar,
-  Chip,
-  useTheme,
-  useMediaQuery,
-  LinearProgress,
+  ListGroup,
   Alert,
-} from "@mui/material";
-import {
-  Add as AddIcon,
-  Person as PersonIcon,
-  Hotel as HotelIcon,
-  Payment as PaymentIcon,
-  CheckCircle as CheckIcon,
-  Upload as UploadIcon,
-} from "@mui/icons-material";
-import { motion, AnimatePresence } from 'framer-motion';
-
-const modalStyle = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '95%',
-  maxWidth: 900,
-  bgcolor: 'background.paper',
-  borderRadius: 3,
-  boxShadow: 24,
-  p: 0,
-  maxHeight: '95vh',
-  overflowY: 'auto'
-};
+  Spinner,
+  ProgressBar,
+} from "react-bootstrap";
+import { motion, AnimatePresence } from "framer-motion";
 
 function BookingPage() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -79,16 +35,16 @@ function BookingPage() {
   const [numRooms, setNumRooms] = useState(1);
   const [selectedRooms, setSelectedRooms] = useState([]);
   const [roomDetails, setRoomDetails] = useState({});
-  const [commonAmount, setCommonAmount] = useState('');
-  
-  // Guest Details State
-  const [guestName, setGuestName] = useState('');
-  const [guestPhone, setGuestPhone] = useState('');
-  const [idProofBase64, setIdProofBase64] = useState('');
+  const [commonAmount, setCommonAmount] = useState("");
+
+  // Guest Details
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [idProofBase64, setIdProofBase64] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const steps = ['Select Rooms', 'Guest & Payment Details', 'Review & Confirm'];
+  const steps = ["Select Rooms", "Guest & Payment Details", "Review & Confirm"];
 
   useEffect(() => {
     const roomsCollection = collection(db, "rooms");
@@ -112,10 +68,10 @@ function BookingPage() {
     setNumRooms(1);
     setSelectedRooms([]);
     setRoomDetails({});
-    setCommonAmount('');
-    setGuestName('');
-    setGuestPhone('');
-    setIdProofBase64('');
+    setCommonAmount("");
+    setGuestName("");
+    setGuestPhone("");
+    setIdProofBase64("");
     setIsSubmitting(false);
   };
 
@@ -132,16 +88,16 @@ function BookingPage() {
   };
 
   const handleRoomSelect = (roomId) => {
-    setSelectedRooms(prev => {
+    setSelectedRooms((prev) => {
       const newSelection = prev.includes(roomId)
-        ? prev.filter(id => id !== roomId)
+        ? prev.filter((id) => id !== roomId)
         : [...prev, roomId];
-      
-      newSelection.forEach(id => {
+
+      newSelection.forEach((id) => {
         if (!roomDetails[id]) {
-          setRoomDetails(prevDetails => ({
+          setRoomDetails((prevDetails) => ({
             ...prevDetails,
-            [id]: { numberOfPersons: '', amount: commonAmount }
+            [id]: { numberOfPersons: "", amount: commonAmount },
           }));
         }
       });
@@ -150,18 +106,18 @@ function BookingPage() {
   };
 
   const handleDetailChange = (roomId, field, value) => {
-    setRoomDetails(prev => ({
+    setRoomDetails((prev) => ({
       ...prev,
-      [roomId]: { ...prev[roomId], [field]: value }
+      [roomId]: { ...prev[roomId], [field]: value },
     }));
   };
 
   const handleCommonAmountChange = (e) => {
     const newAmount = e.target.value;
     setCommonAmount(newAmount);
-    setRoomDetails(prevDetails => {
+    setRoomDetails((prevDetails) => {
       const newDetails = { ...prevDetails };
-      selectedRooms.forEach(roomId => {
+      selectedRooms.forEach((roomId) => {
         newDetails[roomId] = { ...newDetails[roomId], amount: newAmount };
       });
       return newDetails;
@@ -191,464 +147,354 @@ function BookingPage() {
         const bookingsCollection = collection(db, "bookings");
         for (const roomId of selectedRooms) {
           const roomRef = doc(db, "rooms", roomId);
-          const room = rooms.find(r => r.id === roomId);
-          const finalAmount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
+          const room = rooms.find((r) => r.id === roomId);
+          const finalAmount = parseFloat(
+            roomDetails[roomId]?.amount || commonAmount || 0
+          );
           transaction.set(doc(bookingsCollection), {
             roomId: roomId,
             roomNo: room.roomNo,
-            numberOfPersons: parseInt(roomDetails[roomId]?.numberOfPersons || 1, 10),
+            numberOfPersons: parseInt(
+              roomDetails[roomId]?.numberOfPersons || 1,
+              10
+            ),
             amount: finalAmount,
             guestName: guestName,
             customerPhone: guestPhone,
             idProof: idProofBase64,
             checkIn: serverTimestamp(),
             checkOut: null,
-            status: 'Active',
-            createdAt: serverTimestamp()
+            status: "Active",
+            createdAt: serverTimestamp(),
           });
           transaction.update(roomRef, { status: "Booked" });
         }
       });
-      alert('Booking successful!');
+      alert("Booking successful!");
       handleCloseModal();
     } catch (error) {
-      alert('Booking failed! The selected room(s) might have just been booked.');
+      alert("Booking failed! The selected room(s) might have just been booked.");
       console.error("Transaction failed: ", error);
       setIsSubmitting(false);
     }
   };
-  
+
   const totalAmount = selectedRooms.reduce((total, roomId) => {
-    const amount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
+    const amount = parseFloat(
+      roomDetails[roomId]?.amount || commonAmount || 0
+    );
     return total + amount;
   }, 0);
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <LinearProgress sx={{ width: '100%', maxWidth: 400 }} />
-        </Box>
+      <Container className="py-5 text-center">
+        <ProgressBar animated now={60} style={{ maxWidth: 400, margin: "auto" }} />
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1, md: 3 } }}>
+    <Container fluid className="py-4">
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.primary.main, mb: 1 }}>
-              Booking Management
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Create new bookings and manage guest reservations
-            </Typography>
-          </Box>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={handleOpenModal}
-            sx={{
-              borderRadius: 3,
-              px: 4,
-              py: 1.5,
-              textTransform: 'none',
-              fontWeight: 600,
-              boxShadow: theme.shadows[4],
-            }}
-          >
-            New Booking
-          </Button>
-        </Box>
-      </Box>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h3 className="fw-bold text-primary">Booking Management</h3>
+          <p className="text-muted">Create new bookings and manage guest reservations</p>
+        </div>
+        <Button variant="primary" onClick={handleOpenModal}>
+          + New Booking
+        </Button>
+      </div>
 
       {/* Welcome Card */}
-      <Paper
-        sx={{
-          p: 4,
-          borderRadius: 3,
-          background: `linear-gradient(135deg, ${theme.palette.primary.main}15 0%, ${theme.palette.secondary.main}15 100%)`,
-          border: `1px solid ${theme.palette.primary.main}30`,
-          textAlign: 'center',
-        }}
-      >
-        <HotelIcon sx={{ fontSize: 64, color: theme.palette.primary.main, mb: 2 }} />
-        <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: theme.palette.text.primary }}>
-          Ready to Create a New Booking?
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Click the "New Booking" button above to start the booking process for your guests.
-        </Typography>
-        <Button
-          variant="outlined"
-          onClick={handleOpenModal}
-          sx={{
-            borderRadius: 2,
-            px: 3,
-            textTransform: 'none',
-            fontWeight: 600,
-          }}
-        >
+      <Card className="text-center p-4 mb-4">
+        <h5 className="fw-bold">Ready to Create a New Booking?</h5>
+        <p className="text-muted">
+          Click the "New Booking" button above to start the booking process.
+        </p>
+        <Button variant="outline-primary" onClick={handleOpenModal}>
           Get Started
         </Button>
-      </Paper>
-        
+      </Card>
+
       {/* Booking Modal */}
-      <Modal open={modalOpen} onClose={handleCloseModal}>
-        <Box sx={modalStyle}>
-          {/* Modal Header */}
-          <Box sx={{ p: 3, borderBottom: `1px solid ${theme.palette.divider}` }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
-              Create New Booking
-            </Typography>
-            <Box sx={{ mt: 2 }}>
-              <Stepper activeStep={step} alternativeLabel={!isMobile}>
-                {steps.map((label, index) => (
-                  <Step key={label}>
-                    <StepLabel
-                      StepIconComponent={({ active, completed }) => (
-                        <Avatar
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            bgcolor: completed ? theme.palette.success.main : active ? theme.palette.primary.main : theme.palette.grey[300],
-                            color: 'white',
-                            fontSize: '0.875rem',
-                          }}
-                        >
-                          {completed ? <CheckIcon sx={{ fontSize: '1rem' }} /> : index + 1}
-                        </Avatar>
-                      )}
-                    >
-                      {!isMobile && label}
-                    </StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-            </Box>
-          </Box>
-
-          {/* Modal Content */}
-          <Box sx={{ p: 3 }}>
-            <AnimatePresence mode="wait">
-              {/* Step 1: Room Selection */}
-              {step === 0 && (
-                <motion.div
-                  key="step1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <HotelIcon color="primary" />
-                    Select Rooms
-                  </Typography>
-                  
-                  <FormControl fullWidth sx={{ mb: 3 }}>
-                    <InputLabel>Number of Rooms</InputLabel>
-                    <Select
-                      value={numRooms}
-                      label="Number of Rooms"
-                      onChange={(e) => { setNumRooms(e.target.value); setSelectedRooms([]); }}
-                    >
-                      {[...Array(Math.min(10, rooms.length)).keys()].map(n => (
-                        <MenuItem key={n + 1} value={n + 1}>{n + 1} Room{n > 0 ? 's' : ''}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                    Available Rooms ({selectedRooms.length} / {numRooms} selected)
-                  </Typography>
-
-                  <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflowY: 'auto', borderRadius: 2 }}>
-                    {rooms.length > 0 ? (
-                      <Grid container spacing={2}>
-                        {rooms.map(room => (
-                          <Grid item xs={12} sm={6} key={room.id}>
-                            <Card
-                              sx={{
-                                cursor: 'pointer',
-                                border: selectedRooms.includes(room.id) ? `2px solid ${theme.palette.primary.main}` : `1px solid ${theme.palette.divider}`,
-                                bgcolor: selectedRooms.includes(room.id) ? `${theme.palette.primary.main}10` : 'background.paper',
-                                transition: 'all 0.2s ease',
-                                '&:hover': {
-                                  borderColor: theme.palette.primary.main,
-                                },
-                              }}
-                              onClick={() => handleRoomSelect(room.id)}
-                            >
-                              <CardContent sx={{ p: 2 }}>
-                                <FormControlLabel
-                                  control={
-                                    <Checkbox
-                                      checked={selectedRooms.includes(room.id)}
-                                      disabled={!selectedRooms.includes(room.id) && selectedRooms.length >= numRooms}
-                                    />
-                                  }
-                                  label={
-                                    <Box>
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                        Room {room.roomNo}
-                                      </Typography>
-                                      <Chip
-                                        label={room.roomType}
-                                        size="small"
-                                        sx={{
-                                          bgcolor: theme.palette.secondary.light + '30',
-                                          color: theme.palette.secondary.main,
-                                        }}
-                                      />
-                                    </Box>
-                                  }
-                                />
-                              </CardContent>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                        No available rooms found
-                      </Typography>
-                    )}
-                  </Paper>
-                </motion.div>
-              )}
-
-              {/* Step 2: Guest and Payment Details */}
-              {step === 1 && (
-                <motion.div
-                  key="step2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <PersonIcon color="primary" />
-                    Guest & Payment Details
-                  </Typography>
-                  
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                          Guest Information
-                        </Typography>
-                        <TextField
-                          label="Guest Name"
-                          fullWidth
-                          required
-                          value={guestName}
-                          onChange={e => setGuestName(e.target.value)}
-                          sx={{ mb: 2 }}
-                        />
-                        <TextField
-                          label="Phone Number"
-                          type="tel"
-                          fullWidth
-                          required
-                          value={guestPhone}
-                          onChange={e => setGuestPhone(e.target.value)}
-                          sx={{ mb: 2 }}
-                        />
-                        <Button
-                          variant="outlined"
-                          component="label"
-                          fullWidth
-                          startIcon={<UploadIcon />}
-                          sx={{ textTransform: 'none' }}
-                        >
-                          Upload ID Proof
-                          <input type="file" accept="image/*" hidden onChange={handleFileChange} required />
-                        </Button>
-                        {idProofBase64 && (
-                          <Alert severity="success" sx={{ mt: 1 }}>
-                            ID Proof uploaded successfully
-                          </Alert>
-                        )}
-                      </Paper>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                          Room Details & Charges
-                        </Typography>
-                        <TextField
-                          label="Common Amount (per room)"
-                          type="number"
-                          fullWidth
-                          required
-                          value={commonAmount}
-                          onChange={handleCommonAmountChange}
-                          sx={{ mb: 2 }}
-                        />
-                        <Divider sx={{ mb: 2 }} />
-                        <Box sx={{ maxHeight: 200, overflowY: 'auto' }}>
-                          {selectedRooms.map(roomId => {
-                            const room = rooms.find(r => r.id === roomId);
-                            return (
-                              <Box key={roomId} sx={{ mb: 2, p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                  Room {room.roomNo}
-                                </Typography>
-                                <Grid container spacing={2}>
-                                  <Grid item xs={6}>
-                                    <TextField
-                                      label="Persons"
-                                      type="number"
-                                      size="small"
-                                      fullWidth
-                                      required
-                                      value={roomDetails[roomId]?.numberOfPersons || ''}
-                                      onChange={(e) => handleDetailChange(roomId, 'numberOfPersons', e.target.value)}
-                                    />
-                                  </Grid>
-                                  <Grid item xs={6}>
-                                    <TextField
-                                      label="Amount"
-                                      type="number"
-                                      size="small"
-                                      fullWidth
-                                      value={roomDetails[roomId]?.amount || ''}
-                                      onChange={(e) => handleDetailChange(roomId, 'amount', e.target.value)}
-                                    />
-                                  </Grid>
-                                </Grid>
-                              </Box>
-                            );
-                          })}
-                        </Box>
-                      </Paper>
-                    </Grid>
-                  </Grid>
-                </motion.div>
-              )}
-
-              {/* Step 3: Review & Confirm */}
-              {step === 2 && (
-                <motion.div
-                  key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckIcon color="primary" />
-                    Review & Confirm Booking
-                  </Typography>
-                  
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                          Guest Details
-                        </Typography>
-                        <Typography variant="body2" sx={{ mb: 1 }}>
-                          <strong>Name:</strong> {guestName}
-                        </Typography>
-                        <Typography variant="body2" sx={{ mb: 2 }}>
-                          <strong>Phone:</strong> {guestPhone}
-                        </Typography>
-                        {idProofBase64 && (
-                          <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                              ID Proof:
-                            </Typography>
-                            <Box
-                              component="img"
-                              src={idProofBase64}
-                              alt="ID Proof Preview"
-                              sx={{
-                                width: '100%',
-                                maxWidth: 200,
-                                height: 'auto',
-                                border: `1px solid ${theme.palette.divider}`,
-                                borderRadius: 1,
-                              }}
-                            />
-                          </Box>
-                        )}
-                      </Paper>
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                          Booking Summary
-                        </Typography>
-                        <List dense>
-                          {selectedRooms.map(roomId => {
-                            const room = rooms.find(r => r.id === roomId);
-                            const finalAmount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
-                            return (
-                              <ListItem key={roomId} sx={{ px: 0 }}>
-                                <ListItemText
-                                  primary={`Room ${room.roomNo}`}
-                                  secondary={`${roomDetails[roomId]?.numberOfPersons || 1} Person(s)`}
-                                />
-                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                  ₹{finalAmount.toFixed(2)}
-                                </Typography>
-                              </ListItem>
-                            );
-                          })}
-                          <Divider sx={{ my: 1 }} />
-                          <ListItem sx={{ px: 0 }}>
-                            <ListItemText
-                              primary={<Typography variant="h6" sx={{ fontWeight: 700 }}>Total Amount</Typography>}
-                            />
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
-                              ₹{totalAmount.toFixed(2)}
-                            </Typography>
-                          </ListItem>
-                        </List>
-                      </Paper>
-                    </Grid>
-                  </Grid>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </Box>
-
-          {/* Modal Footer */}
-          <Box sx={{ p: 3, borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', justifyContent: 'space-between' }}>
-            <Button
-              onClick={step === 0 ? handleCloseModal : handleBack}
-              sx={{ textTransform: 'none', borderRadius: 2 }}
-            >
-              {step === 0 ? 'Cancel' : 'Back'}
-            </Button>
-            
-            {step < steps.length - 1 ? (
-              <Button
-                variant="contained"
-                onClick={handleNext}
-                sx={{ textTransform: 'none', borderRadius: 2, px: 4 }}
+      <Modal show={modalOpen} onHide={handleCloseModal} size="lg" centered scrollable>
+        <Modal.Header closeButton>
+          <Modal.Title>Create New Booking</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <AnimatePresence mode="wait">
+            {/* Step 1 */}
+            {step === 0 && (
+              <motion.div
+                key="step1"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
               >
-                Next
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                sx={{ textTransform: 'none', borderRadius: 2, px: 4 }}
-              >
-                {isSubmitting ? <CircularProgress size={24} /> : 'Confirm Booking'}
-              </Button>
+                <h6>Select Rooms</h6>
+                <Form.Group className="mb-3">
+                  <Form.Label>Number of Rooms</Form.Label>
+                  <Form.Select
+                    value={numRooms}
+                    onChange={(e) => {
+                      setNumRooms(e.target.value);
+                      setSelectedRooms([]);
+                    }}
+                  >
+                    {[...Array(Math.min(10, rooms.length)).keys()].map((n) => (
+                      <option key={n + 1} value={n + 1}>
+                        {n + 1} Room{n > 0 ? "s" : ""}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+                <Row>
+                  {rooms.map((room) => (
+                    <Col md={6} key={room.id}>
+                      <Card
+                        className={`mb-2 ${
+                          selectedRooms.includes(room.id)
+                            ? "border-primary"
+                            : ""
+                        }`}
+                        onClick={() => handleRoomSelect(room.id)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <Card.Body>
+                          <Form.Check
+                            type="checkbox"
+                            checked={selectedRooms.includes(room.id)}
+                            label={`Room ${room.roomNo} (${room.roomType})`}
+                            disabled={
+                              !selectedRooms.includes(room.id) &&
+                              selectedRooms.length >= numRooms
+                            }
+                          />
+                        </Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+                </Row>
+              </motion.div>
             )}
-          </Box>
-        </Box>
+
+            {/* Step 2 */}
+            {step === 1 && (
+              <motion.div
+                key="step2"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <Row>
+                  <Col md={6}>
+                    <h6>Guest Information</h6>
+                    <Form.Group className="mb-2">
+                      <Form.Label>Name</Form.Label>
+                      <Form.Control
+                        value={guestName}
+                        onChange={(e) => setGuestName(e.target.value)}
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                      <Form.Label>Phone</Form.Label>
+                      <Form.Control
+                        value={guestPhone}
+                        onChange={(e) => setGuestPhone(e.target.value)}
+                      />
+                    </Form.Group>
+                    <Form.Group className="mb-2">
+                      <Form.Label>ID Proof</Form.Label>
+                      <Form.Control type="file" onChange={handleFileChange} />
+                    </Form.Group>
+                    {idProofBase64 && (
+                      <Alert variant="success">ID Proof uploaded</Alert>
+                    )}
+                  </Col>
+                  <Col md={6}>
+                    <h6>Room Charges</h6>
+                    <Form.Group className="mb-2">
+                      <Form.Label>Common Amount</Form.Label>
+                      <Form.Control
+                        type="number"
+                        value={commonAmount}
+                        onChange={handleCommonAmountChange}
+                      />
+                    </Form.Group>
+                    {selectedRooms.map((roomId) => {
+                      const room = rooms.find((r) => r.id === roomId);
+                      return (
+                        <Card key={roomId} className="mb-2">
+                          <Card.Body>
+                            <strong>Room {room.roomNo}</strong>
+                            <Row>
+                              <Col>
+                                <Form.Control
+                                  type="number"
+                                  placeholder="Persons"
+                                  value={
+                                    roomDetails[roomId]?.numberOfPersons || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleDetailChange(
+                                      roomId,
+                                      "numberOfPersons",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </Col>
+                              <Col>
+                                <Form.Control
+                                  type="number"
+                                  placeholder="Amount"
+                                  value={roomDetails[roomId]?.amount || ""}
+                                  onChange={(e) =>
+                                    handleDetailChange(
+                                      roomId,
+                                      "amount",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </Col>
+                            </Row>
+                          </Card.Body>
+                        </Card>
+                      );
+                    })}
+                  </Col>
+                </Row>
+              </motion.div>
+            )}
+
+            {/* Step 3 */}
+            {step === 2 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+              >
+                <h6>Review & Confirm</h6>
+                <Row>
+                  <Col md={6}>
+                    <Card>
+                      <Card.Body>
+                        <h6>Guest Details</h6>
+                        <p><b>Name:</b> {guestName}</p>
+                        <p><b>Phone:</b> {guestPhone}</p>
+                        {idProofBase64 && (
+                          <img
+                            src={idProofBase64}
+                            alt="ID Proof"
+                            style={{ width: 150 }}
+                          />
+                        )}
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                  <Col md={6}>
+                    <Card>
+                      <Card.Body>
+                        <h6>Booking Summary</h6>
+                        <ListGroup>
+                          {selectedRooms.map((roomId) => {
+                            const room = rooms.find((r) => r.id === roomId);
+                            const finalAmount = parseFloat(
+                              roomDetails[roomId]?.amount || commonAmount || 0
+                            );
+                            return (
+                              <ListGroup.Item key={roomId}>
+                                Room {room.roomNo} - ₹{finalAmount}
+                              </ListGroup.Item>
+                            );
+                          })}
+                          <ListGroup.Item className="fw-bold">
+                            Total: ₹{totalAmount.toFixed(2)}
+                          </ListGroup.Item>
+                        </ListGroup>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={step === 0 ? handleCloseModal : handleBack}
+          >
+            {step === 0 ? "Cancel" : "Back"}
+          </Button>
+          {step < steps.length - 1 ? (
+            <Button variant="primary" onClick={handleNext}>
+              Next
+            </Button>
+          ) : (
+            <Button
+              variant="success"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? <Spinner animation="border" size="sm" /> : "Confirm Booking"}
+            </Button>
+          )}
+        </Modal.Footer>
       </Modal>
     </Container>
   );
 }
 
 export default BookingPage;
+const StyledModal = styled(Modal)`
+  .modal-dialog {
+    max-width: 900px; /* wider modal */
+  }
+
+  .modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .modal-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .modal-body {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .modal-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+  }
+
+  /* Room card styles */
+  .card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .card.border-primary {
+    border-width: 2px !important;
+    box-shadow: 0 0 8px rgba(13, 110, 253, 0.4);
+  }
+
+  .card img {
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+
+  /* Step animation area */
+  .motion-div {
+    min-height: 300px; /* prevent modal jump on step change */
+  }
+`;

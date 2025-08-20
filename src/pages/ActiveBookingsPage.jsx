@@ -1,47 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../config/firebase";
 import { collection, onSnapshot, updateDoc, doc, runTransaction, serverTimestamp, Timestamp } from "firebase/firestore";
-import {
-  Container,
-  Typography,
-  Box,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Grid,
-  Chip,
-  Avatar,
-  useTheme,
-  useMediaQuery,
-  Paper,
-  Divider,
-  LinearProgress,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-} from '@mui/material';
-import {
-  Hotel as HotelIcon,
-  Person as PersonIcon,
-  Phone as PhoneIcon,
-  AttachMoney as MoneyIcon,
-  Schedule as ScheduleIcon,
-  CheckCircle as CheckoutIcon,
-  ExtensionOutlined as ExtendIcon,
-  Warning as WarningIcon,
-  EventAvailable as ActiveIcon,
-} from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const BOOKING_START_HOUR = 12;
 
 const ActiveBookingsPage = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [extendDialog, setExtendDialog] = useState({ open: false, booking: null });
@@ -150,283 +114,88 @@ const ActiveBookingsPage = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <LinearProgress sx={{ width: '100%', maxWidth: 400 }} />
-        </Box>
-      </Container>
+      <div className="container text-center py-5">
+        <div className="spinner-border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1, md: 3 } }}>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 48, height: 48 }}>
-            <ActiveIcon />
-          </Avatar>
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
-              Active Bookings
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Manage current guest stays and check-outs
-            </Typography>
-          </Box>
-        </Box>
-        
-        {/* Stats */}
-        <Paper sx={{ p: 2, borderRadius: 2, bgcolor: theme.palette.primary.light + '20' }}>
-          <Grid container spacing={2}>
-            <Grid item xs={6} sm={3}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
-                  {activeBookings.length}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Active Bookings
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>
-                  {activeBookings.filter(b => {
-                    const cycleEnd = getBookingCycleEnd(b.checkIn);
-                    return cycleEnd && new Date() > cycleEnd;
-                  }).length}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Overdue
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
-                  ₹{activeBookings.reduce((sum, b) => sum + (b.amount || 0), 0).toLocaleString()}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Total Revenue
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} sm={3}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.info.main }}>
-                  {Math.round(activeBookings.reduce((sum, b) => sum + (b.numberOfPersons || 1), 0) / Math.max(activeBookings.length, 1))}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Avg. Guests
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Box>
+    <div className="container py-4">
+      <h2 className="mb-4">Active Bookings</h2>
 
-      {/* Bookings Grid */}
       {activeBookings.length > 0 ? (
-        <Grid container spacing={3}>
+        <div className="row g-3">
           {activeBookings.map((booking, index) => {
             const cycleEndDate = getBookingCycleEnd(booking.checkIn);
             const isOverdue = cycleEndDate && new Date() > cycleEndDate;
 
             return (
-              <Grid item xs={12} sm={6} lg={4} key={booking.id}>
+              <div className="col-md-4" key={booking.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  whileHover={{ y: -4 }}
                 >
-                  <Card
-                    sx={{
-                      height: '100%',
-                      borderRadius: 3,
-                      boxShadow: theme.shadows[2],
-                      border: isOverdue ? `2px solid ${theme.palette.error.main}` : `2px solid ${theme.palette.success.main}30`,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        boxShadow: theme.shadows[8],
-                        borderColor: isOverdue ? theme.palette.error.main : theme.palette.success.main,
-                      },
-                    }}
-                  >
-                    <CardContent sx={{ p: 3 }}>
-                      {/* Header */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 40, height: 40 }}>
-                            <HotelIcon />
-                          </Avatar>
-                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                            Room {booking.roomNo}
-                          </Typography>
-                        </Box>
-                        <Chip
-                          label={isOverdue ? "Overdue" : "Active"}
-                          size="small"
-                          icon={isOverdue ? <WarningIcon /> : <CheckoutIcon />}
-                          sx={{
-                            bgcolor: isOverdue ? `${theme.palette.error.main}20` : `${theme.palette.success.main}20`,
-                            color: isOverdue ? theme.palette.error.main : theme.palette.success.main,
-                            fontWeight: 600,
-                          }}
-                        />
-                      </Box>
-
-                      {/* Guest Info */}
-                      <Box sx={{ mb: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <PersonIcon sx={{ color: theme.palette.text.secondary, fontSize: '1.2rem' }} />
-                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                            {booking.guestName}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <PhoneIcon sx={{ color: theme.palette.text.secondary, fontSize: '1.2rem' }} />
-                          <Typography variant="body2" color="text.secondary">
-                            {booking.customerPhone}
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <MoneyIcon sx={{ color: theme.palette.success.main, fontSize: '1.2rem' }} />
-                          <Typography variant="body1" sx={{ fontWeight: 600, color: theme.palette.success.main }}>
-                            ₹{parseFloat(booking.amount).toLocaleString()}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Divider sx={{ my: 2 }} />
-
-                      {/* Timing Info */}
-                      <Box sx={{ mb: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <ScheduleIcon sx={{ color: theme.palette.info.main, fontSize: '1.2rem' }} />
-                          <Typography variant="caption" color="text.secondary">
-                            Check-in: {formatDate(booking.checkIn?.toDate())}
-                          </Typography>
-                        </Box>
-                        {cycleEndDate && (
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <ScheduleIcon sx={{ color: isOverdue ? theme.palette.error.main : theme.palette.warning.main, fontSize: '1.2rem' }} />
-                            <Typography variant="caption" color={isOverdue ? "error" : "text.secondary"}>
-                              Cycle ends: {formatDate(cycleEndDate)}
-                            </Typography>
-                          </Box>
-                        )}
-                      </Box>
-
-                      {/* Persons */}
-                      <Chip
-                        label={`${booking.numberOfPersons || 1} Guest${(booking.numberOfPersons || 1) > 1 ? 's' : ''}`}
-                        size="small"
-                        sx={{
-                          bgcolor: theme.palette.info.light + '30',
-                          color: theme.palette.info.main,
-                        }}
-                      />
-                    </CardContent>
-
-                    <CardActions sx={{ p: 2, pt: 0, justifyContent: 'flex-end', gap: 1 }}>
+                  <div className={`card ${isOverdue ? 'border-danger' : 'border-success'}`}>
+                    <div className="card-body">
+                      <h5 className="card-title">Room {booking.roomNo}</h5>
+                      <p><strong>Guest:</strong> {booking.guestName}</p>
+                      <p><strong>Phone:</strong> {booking.customerPhone}</p>
+                      <p><strong>Amount:</strong> ₹{parseFloat(booking.amount).toLocaleString()}</p>
+                      <p><strong>Check-in:</strong> {formatDate(booking.checkIn?.toDate())}</p>
+                      {cycleEndDate && <p><strong>Cycle ends:</strong> {formatDate(cycleEndDate)}</p>}
+                      <p><strong>Guests:</strong> {booking.numberOfPersons || 1}</p>
+                    </div>
+                    <div className="card-footer d-flex justify-content-end gap-2">
                       {isOverdue ? (
                         <>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => handleAlreadyCheckout(booking.id, booking.roomId, cycleEndDate)}
-                            sx={{ textTransform: 'none', borderRadius: 2 }}
-                          >
-                            Already Left
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            startIcon={<ExtendIcon />}
-                            onClick={() => handleOpenExtendDialog(booking)}
-                            sx={{ textTransform: 'none', borderRadius: 2 }}
-                          >
-                            Extend
-                          </Button>
+                          <button className="btn btn-outline-danger btn-sm" onClick={() => handleAlreadyCheckout(booking.id, booking.roomId, cycleEndDate)}>Already Left</button>
+                          <button className="btn btn-primary btn-sm" onClick={() => handleOpenExtendDialog(booking)}>Extend</button>
                         </>
                       ) : (
-                        <Button
-                          size="small"
-                          variant="contained"
-                          startIcon={<CheckoutIcon />}
-                          onClick={() => handleCheckout(booking.id, booking.roomId)}
-                          sx={{ textTransform: 'none', borderRadius: 2 }}
-                        >
-                          Checkout
-                        </Button>
+                        <button className="btn btn-success btn-sm" onClick={() => handleCheckout(booking.id, booking.roomId)}>Checkout</button>
                       )}
-                    </CardActions>
-                  </Card>
+                    </div>
+                  </div>
                 </motion.div>
-              </Grid>
+              </div>
             );
           })}
-        </Grid>
+        </div>
       ) : (
-        <Paper
-          sx={{
-            p: 6,
-            textAlign: 'center',
-            borderRadius: 3,
-            bgcolor: theme.palette.grey[50],
-            border: `2px dashed ${theme.palette.grey[300]}`,
-          }}
-        >
-          <ActiveIcon sx={{ fontSize: 64, color: theme.palette.grey[400], mb: 2 }} />
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: theme.palette.text.secondary }}>
-            No Active Bookings
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            All rooms are currently available. New bookings will appear here.
-          </Typography>
-        </Paper>
+        <div className="alert alert-info text-center">No Active Bookings</div>
       )}
 
-      {/* Extend Stay Dialog */}
-      <Dialog
-        open={extendDialog.open}
-        onClose={handleCloseExtendDialog}
-        PaperProps={{
-          sx: { borderRadius: 3, p: 1 }
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>
-          Extend Stay - Room {extendDialog.booking?.roomNo}
-        </DialogTitle>
-        <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Enter the amount for the extended booking period for {extendDialog.booking?.guestName}.
-          </Typography>
-          <TextField
-            label="Extension Amount"
-            type="number"
-            fullWidth
-            value={extendAmount}
-            onChange={(e) => setExtendAmount(e.target.value)}
-            sx={{ mt: 1 }}
-          />
-        </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 1 }}>
-          <Button onClick={handleCloseExtendDialog} sx={{ textTransform: 'none', borderRadius: 2 }}>
-            Cancel
-          </Button>
-          <Button
-            onClick={handleExtendStay}
-            variant="contained"
-            sx={{ textTransform: 'none', borderRadius: 2 }}
-          >
-            Extend Stay
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+      {/* Extend Stay Modal */}
+      {extendDialog.open && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Extend Stay - Room {extendDialog.booking?.roomNo}</h5>
+                <button type="button" className="btn-close" onClick={handleCloseExtendDialog}></button>
+              </div>
+              <div className="modal-body">
+                <p>Enter the amount for {extendDialog.booking?.guestName}'s extended stay.</p>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={extendAmount}
+                  onChange={(e) => setExtendAmount(e.target.value)}
+                />
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-secondary" onClick={handleCloseExtendDialog}>Cancel</button>
+                <button className="btn btn-primary" onClick={handleExtendStay}>Extend Stay</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// Make sure you have a valid 'db' export from your Firebase config file.
 import { db } from "../config/firebase";
 import {
   collection,
@@ -12,65 +11,22 @@ import {
   query,
   orderBy
 } from "firebase/firestore";
-import {
-  Container,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  Button,
-  IconButton,
-  FormControl,
-  InputLabel,
-  Box,
-  Paper,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Chip,
-  useTheme,
-  useMediaQuery,
-  Fab,
-  Divider,
-  Avatar,
-  LinearProgress,
-  ThemeProvider,
-  createTheme,
-} from "@mui/material";
-import {
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Add as AddIcon,
-  Hotel as HotelIcon,
-  AcUnit as AcIcon,
-  Air as FanIcon,
-  CheckCircle as AvailableIcon,
-  Cancel as BookedIcon,
-} from "@mui/icons-material";
-import { motion, AnimatePresence } from 'framer-motion';
-
+import { Modal, Button, Form, Spinner } from "react-bootstrap";
+import { FaEdit, FaTrash, FaPlus, FaBed, FaSnowflake, FaWind, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
 function RoomsPage() {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
   const [rooms, setRooms] = useState([]);
   const [roomNo, setRoomNo] = useState("");
   const [roomType, setRoomType] = useState("AC");
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [roomToDelete, setRoomToDelete] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  // --- Real Firebase Firestore connection ---
+  // Firestore rooms collection
   const roomsCollection = collection(db, "rooms");
+
   useEffect(() => {
     const q = query(roomsCollection, orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -83,7 +39,6 @@ function RoomsPage() {
     });
     return unsubscribe;
   }, []);
-  
 
   const resetForm = () => {
     setRoomNo("");
@@ -119,16 +74,16 @@ function RoomsPage() {
     setRoomNo(room.roomNo);
     setRoomType(room.roomType);
     setShowForm(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleOpenDeleteDialog = (id) => {
+  const handleOpenDeleteModal = (id) => {
     setRoomToDelete(id);
-    setOpenDeleteDialog(true);
+    setShowDeleteModal(true);
   };
 
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false);
     setRoomToDelete(null);
   };
 
@@ -136,323 +91,156 @@ function RoomsPage() {
     if (roomToDelete) {
       await deleteDoc(doc(db, "rooms", roomToDelete));
     }
-    handleCloseDeleteDialog();
+    handleCloseDeleteModal();
   };
 
   const getRoomIcon = (type) => {
-    return type === "AC" ? <AcIcon /> : <FanIcon />;
+    return type === "AC" ? <FaSnowflake /> : <FaWind />;
   };
 
-  const getStatusIcon = (status) => {
-    return status === "Available" ? <AvailableIcon color="success" /> : <BookedIcon color="error" />;
-  };
-
-  const getStatusColor = (status) => {
-    return status === "Available" ? theme.palette.success.main : theme.palette.error.main;
+  const getStatusBadge = (status) => {
+    return status === "Available" ? (
+      <span className="badge bg-success"><FaCheckCircle /> Available</span>
+    ) : (
+      <span className="badge bg-danger"><FaTimesCircle /> Booked</span>
+    );
   };
 
   if (loading) {
     return (
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-          <LinearProgress sx={{ width: '100%', maxWidth: 400 }} />
-        </Box>
-      </Container>
+      <div className="container text-center my-5">
+        <Spinner animation="border" role="status" />
+        <p className="mt-2">Loading rooms...</p>
+      </div>
     );
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
+    <div className="container py-4">
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
-          <Box>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: theme.palette.primary.main, mb: 1 }}>
-              Room Management
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Manage your hotel rooms and their availability.
-            </Typography>
-          </Box>
-          {/* Hide the button on mobile screens, show the FAB instead */}
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setShowForm(true)}
-            sx={{
-              display: { xs: 'none', md: 'inline-flex' }, // Key change for responsiveness
-              borderRadius: 3,
-              px: 3,
-              py: 1.5,
-              textTransform: 'none',
-              fontWeight: 600,
-              boxShadow: theme.shadows[4],
-            }}
-          >
-            Add New Room
-          </Button>
-        </Box>
-      </Box>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>Room Management</h2>
+          <p className="text-muted">Manage your hotel rooms and their availability.</p>
+        </div>
+        <Button variant="primary" onClick={() => setShowForm(true)}>
+          <FaPlus className="me-2" /> Add New Room
+        </Button>
+      </div>
 
       {/* Add/Edit Form */}
-      <AnimatePresence>
-        {showForm && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, height: 0 }}
-            animate={{ opacity: 1, y: 0, height: 'auto' }}
-            exit={{ opacity: 0, y: -20, height: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Paper
-              elevation={4}
-              sx={{
-                p: { xs: 2, sm: 3, md: 4 }, // Responsive padding
-                mb: 4,
-                borderRadius: 3,
-                background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}10 100%)`,
-                border: `1px solid ${theme.palette.divider}`,
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
-                {editId ? "Edit Room" : "Add New Room"}
-              </Typography>
-              <Box component="form" onSubmit={handleSubmit}>
-                <Grid container spacing={{xs: 2, md: 3}} alignItems="center">
-                  <Grid item xs={12} md={4}>
-                    <TextField
-                      label="Room Number"
-                      variant="outlined"
+      {showForm && (
+        <div className="card mb-4">
+          <div className="card-body">
+            <h5>{editId ? "Edit Room" : "Add New Room"}</h5>
+            <Form onSubmit={handleSubmit}>
+              <div className="row g-3 align-items-end">
+                <div className="col-md-4">
+                  <Form.Group>
+                    <Form.Label>Room Number</Form.Label>
+                    <Form.Control
+                      type="text"
                       value={roomNo}
                       onChange={(e) => setRoomNo(e.target.value)}
                       required
-                      fullWidth
                     />
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <FormControl fullWidth variant="outlined">
-                      <InputLabel>Room Type</InputLabel>
-                      <Select
-                        value={roomType}
-                        onChange={(e) => setRoomType(e.target.value)}
-                        label="Room Type"
-                      >
-                        <MenuItem value="AC">AC Room</MenuItem>
-                        <MenuItem value="Non-AC">Non-AC Room</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    {/* Responsive button group */}
-                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        fullWidth={{ xs: true, sm: false }} // Full width on mobile
-                        sx={{
-                          px: 4,
-                          py: 1.5,
-                          textTransform: 'none',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {editId ? "Update" : "Add Room"}
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        onClick={resetForm}
-                        fullWidth={{ xs: true, sm: false }} // Full width on mobile
-                        sx={{
-                          px: 3,
-                          py: 1.5,
-                          textTransform: 'none',
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
-            </Paper>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  </Form.Group>
+                </div>
+                <div className="col-md-4">
+                  <Form.Group>
+                    <Form.Label>Room Type</Form.Label>
+                    <Form.Select
+                      value={roomType}
+                      onChange={(e) => setRoomType(e.target.value)}
+                    >
+                      <option value="AC">AC Room</option>
+                      <option value="Non-AC">Non-AC Room</option>
+                    </Form.Select>
+                  </Form.Group>
+                </div>
+                <div className="col-md-4 d-flex gap-2">
+                  <Button type="submit" variant="success">
+                    {editId ? "Update" : "Add Room"}
+                  </Button>
+                  <Button variant="secondary" onClick={resetForm}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </Form>
+          </div>
+        </div>
+      )}
 
       {/* Rooms Grid */}
-      <Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
-          All Rooms ({rooms.length})
-        </Typography>
-        
-        {rooms.length > 0 ? (
-          <Grid container spacing={{ xs: 2, md: 3 }}>
-            {rooms.map((room, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  style={{ height: '100%' }}
-                >
-                  <Card
-                    sx={{
-                      height: '100%',
-                      borderRadius: 3,
-                      boxShadow: theme.shadows[2],
-                      transition: 'all 0.3s ease',
-                      border: `1px solid ${theme.palette.divider}`,
-                      borderLeft: `5px solid ${getStatusColor(room.status)}`,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      '&:hover': {
-                        boxShadow: theme.shadows[8],
-                        borderColor: getStatusColor(room.status),
-                      },
-                    }}
-                  >
-                    <CardContent sx={{ p: 2, flexGrow: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                        <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
-                          <HotelIcon />
-                        </Avatar>
-                        <Chip
-                          icon={getStatusIcon(room.status)}
-                          label={room.status}
-                          size="small"
-                          sx={{
-                            bgcolor: `${getStatusColor(room.status)}20`,
-                            color: getStatusColor(room.status),
-                            fontWeight: 600,
-                          }}
-                        />
-                      </Box>
-                      
-                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                        Room {room.roomNo}
-                      </Typography>
-                      
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        {getRoomIcon(room.roomType)}
-                        <Typography variant="body2" color="text.secondary">
-                          {room.roomType}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                    
-                    <Divider />
-                    
-                    <CardActions sx={{ p: 1, justifyContent: 'flex-end' }}>
-                      <IconButton onClick={() => handleEdit(room)} aria-label="edit room" sx={{ color: 'primary.main' }}>
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton onClick={() => handleOpenDeleteDialog(room.id)} aria-label="delete room" sx={{ color: 'error.main' }}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </CardActions>
-                  </Card>
-                </motion.div>
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Paper
-            sx={{
-              p: { xs: 3, sm: 6 }, // Responsive padding
-              textAlign: 'center',
-              borderRadius: 3,
-              bgcolor: 'grey.50',
-              border: `2px dashed ${theme.palette.grey[300]}`,
-            }}
-          >
-            <HotelIcon sx={{ fontSize: { xs: 48, sm: 64 }, color: 'grey.400', mb: 2 }} />
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.secondary' }}>
-              No rooms found
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Get started by adding your first room.
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setShowForm(true)}
-            >
-              Add First Room
-            </Button>
-          </Paper>
-        )}
-      </Box>
+      <h5>All Rooms ({rooms.length})</h5>
+      {rooms.length > 0 ? (
+        <div className="row">
+          {rooms.map((room) => (
+            <div className="col-md-3 mb-3" key={room.id}>
+              <div className="card h-100">
+                <div className="card-body d-flex flex-column">
+                  <div className="d-flex justify-content-between mb-2">
+                    <div className="text-primary"><FaBed /></div>
+                    {getStatusBadge(room.status)}
+                  </div>
+                  <h6>Room {room.roomNo}</h6>
+                  <div className="text-muted">{getRoomIcon(room.roomType)} {room.roomType}</div>
+                  <div className="mt-auto d-flex justify-content-end gap-2">
+                    <Button size="sm" variant="outline-primary" onClick={() => handleEdit(room)}>
+                      <FaEdit />
+                    </Button>
+                    <Button size="sm" variant="outline-danger" onClick={() => handleOpenDeleteModal(room.id)}>
+                      <FaTrash />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center p-4 border rounded">
+          <FaBed size={40} className="text-muted mb-2" />
+          <h6>No rooms found</h6>
+          <p className="text-muted">Get started by adding your first room.</p>
+          <Button variant="primary" onClick={() => setShowForm(true)}>
+            <FaPlus className="me-2" /> Add First Room
+          </Button>
+        </div>
+      )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={openDeleteDialog}
-        onClose={handleCloseDeleteDialog}
-        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
-      >
-        <DialogTitle sx={{ fontWeight: 600 }}>
-          Confirm Deletion
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to permanently delete this room? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseDeleteDialog}>
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to permanently delete this room? This action cannot be undone.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseDeleteModal}>
             Cancel
           </Button>
-          <Button onClick={confirmDelete} variant="contained" color="error">
+          <Button variant="danger" onClick={confirmDelete}>
             Delete
           </Button>
-        </DialogActions>
-      </Dialog>
+        </Modal.Footer>
+      </Modal>
 
       {/* Mobile FAB */}
-      {isMobile && (
-        <Fab
-          color="primary"
-          aria-label="add room"
-          onClick={() => {
-            setShowForm(true);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-          sx={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            zIndex: 1000,
-          }}
-        >
-          <AddIcon />
-        </Fab>
-      )}
-    </Container>
+      <Button
+        className="d-md-none rounded-circle position-fixed"
+        style={{ bottom: "20px", right: "20px", width: "56px", height: "56px" }}
+        onClick={() => {
+          setShowForm(true);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+      >
+        <FaPlus />
+      </Button>
+    </div>
   );
 }
 
-// To make this a runnable standalone component, we wrap it in a ThemeProvider.
-// In your actual app, you might have a global ThemeProvider already.
-export default function App() {
-  const theme = createTheme({
-    palette: {
-      primary: {
-        main: '#1976d2',
-      },
-      secondary: {
-        main: '#dc004e',
-      },
-    },
-    typography: {
-      fontFamily: 'Roboto, sans-serif',
-    },
-    shape: {
-      borderRadius: 12,
-    },
-  });
-
-  return (
-    <ThemeProvider theme={theme}>
-      <RoomsPage />
-    </ThemeProvider>
-  );
-}
+export default RoomsPage;
