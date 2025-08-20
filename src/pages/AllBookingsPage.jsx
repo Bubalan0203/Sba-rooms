@@ -9,6 +9,7 @@ import {
   Form,
   InputGroup,
   Spinner,
+  Pagination,
 } from "react-bootstrap";
 import {
   StyledContainer,
@@ -45,6 +46,16 @@ const AllBookingsPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  
+  const ITEMS_PER_PAGE = 10;
+  const MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const YEARS = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   useEffect(() => {
     const bookingsCollection = collection(db, "bookings");
@@ -67,6 +78,19 @@ const AllBookingsPage = () => {
   const formatTimestamp = (timestamp) =>
     timestamp?.toDate ? timestamp.toDate().toLocaleString() : "N/A";
 
+  const formatDateOnly = (timestamp) => {
+    if (!timestamp?.toDate) return "N/A";
+    return timestamp.toDate().toLocaleDateString('en-GB'); // DD/MM/YYYY format
+  };
+
+  const generateBookingId = (booking) => {
+    if (!booking.checkIn?.toDate) return booking.id.slice(0, 8);
+    const date = booking.checkIn.toDate();
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${booking.guestName.replace(/\s+/g, '')}-${booking.roomNo}-${day}${month}${year}`;
+  };
   const handleViewDetails = (booking) => {
     setSelectedBooking(booking);
     setShowModal(true);
@@ -75,44 +99,38 @@ const AllBookingsPage = () => {
   const handleGenerateBill = (booking) => {
     const doc = new jsPDF();
 
+    // Header
     doc.setFontSize(22);
     doc.text("SBA Rooms", 105, 20, null, null, "center");
     doc.setFontSize(16);
-    doc.text("Invoice / Bill", 105, 30, null, null, "center");
+    doc.text("Booking Receipt", 105, 30, null, null, "center");
 
+    // Booking details
     doc.setFontSize(12);
-    const checkInTime = booking.checkIn?.toDate
-      ? booking.checkIn.toDate().toLocaleString()
-      : "N/A";
-    const checkOutTime = booking.checkOut?.toDate
-      ? booking.checkOut.toDate().toLocaleString()
-      : "Not Checked Out";
+    const bookingId = generateBookingId(booking);
+    const checkInDate = formatDateOnly(booking.checkIn);
+    const checkOutDate = booking.checkOut ? formatDateOnly(booking.checkOut) : "Not Checked Out";
 
-    doc.text(`Booking ID: ${booking.id}`, 20, 50);
+    doc.text(`Booking ID: ${bookingId}`, 20, 50);
+    doc.text(`Name: ${booking.guestName}`, 20, 60);
+    doc.text(`Phone Number: ${booking.customerPhone}`, 20, 70);
     doc.text(`Room No: ${booking.roomNo}`, 20, 60);
-    doc.text(`Guest Name: ${booking.guestName}`, 20, 70);
-    doc.text(`Number of Persons: ${booking.numberOfPersons}`, 20, 80);
-    doc.text(`Check-In: ${checkInTime}`, 20, 90);
-    doc.text(`Check-Out: ${checkOutTime}`, 20, 100);
+    doc.text(`Amount Paid: ₹${booking.amount}`, 20, 80);
+    doc.text(`Check-In Date: ${checkInDate}`, 20, 90);
+    doc.text(`Check-Out Date: ${checkOutDate}`, 20, 100);
 
-    doc.line(20, 110, 190, 110);
-
-    doc.setFontSize(14);
+    // Total section
+    doc.line(20, 115, 190, 115);
+    doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text(`Total Amount Paid: ₹${booking.amount}`, 20, 120);
+    doc.text(`Total Amount: ₹${booking.amount}`, 20, 130);
+
+    // Thank you message
+    doc.setFontSize(12);
     doc.setFont("helvetica", "normal");
+    doc.text("Thank You!", 105, 150, null, null, "center");
 
-    doc.setFontSize(10);
-    doc.text(
-      "Thank you for your stay at SBA Rooms!",
-      105,
-      140,
-      null,
-      null,
-      "center"
-    );
-
-    doc.save(`SBA-Rooms-Bill-${booking.roomNo}-${booking.id.slice(0, 5)}.pdf`);
+    doc.save(`SBA-Rooms-Receipt-${bookingId}.pdf`);
   };
 
   const getStatusVariant = (status) => {
@@ -128,21 +146,42 @@ const AllBookingsPage = () => {
     }
   };
 
+  // Filter bookings by month, year, search term, and status
   const filteredBookings = bookings.filter((booking) => {
+    // Month and year filter
+    const bookingDate = booking.checkIn?.toDate();
+    const matchesMonthYear = bookingDate && 
+      bookingDate.getMonth() === selectedMonth && 
+      bookingDate.getFullYear() === selectedYear;
+    
+    // Search filter
     const matchesSearch =
       booking.guestName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.roomNo?.toString().includes(searchTerm) ||
       booking.customerPhone?.includes(searchTerm);
+    
+    // Status filter
     const matchesStatus =
       statusFilter === "All" || booking.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    
+    return matchesMonthYear && matchesSearch && matchesStatus;
   });
 
+  // Pagination
+  const totalPages = Math.ceil(filteredBookings.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedBookings = filteredBookings.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMonth, selectedYear, searchTerm, statusFilter]);
+
   const stats = {
-    total: bookings.length,
-    active: bookings.filter((b) => b.status === "Active").length,
-    completed: bookings.filter((b) => b.status === "Completed").length,
-    totalRevenue: bookings.reduce((sum, b) => sum + (b.amount || 0), 0),
+    total: filteredBookings.length,
+    active: filteredBookings.filter((b) => b.status === "Active").length,
+    completed: filteredBookings.filter((b) => b.status === "Completed").length,
+    totalRevenue: filteredBookings.reduce((sum, b) => sum + (b.amount || 0), 0),
   };
 
   if (loading) {
@@ -167,7 +206,7 @@ const AllBookingsPage = () => {
                 All Bookings
               </h1>
               <p className="mb-0">
-                Complete history of all guest bookings and transactions
+                {MONTHS[selectedMonth]} {selectedYear} - Guest bookings and transactions
               </p>
             </Col>
             <Col lg={4} className="mt-3 mt-lg-0 text-lg-end">
@@ -214,7 +253,35 @@ const AllBookingsPage = () => {
       {/* Filters */}
       <FilterBar>
         <Row className="g-3">
-          <Col md={5}>
+          <Col md={2}>
+            <div className="position-relative">
+              <Form.Select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(Number(e.target.value))}
+              >
+                {MONTHS.map((month, index) => (
+                  <option key={index} value={index}>
+                    {month}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+          </Col>
+          <Col md={2}>
+            <div className="position-relative">
+              <Form.Select
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(Number(e.target.value))}
+              >
+                {YEARS.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+          </Col>
+          <Col md={4}>
             <div className="position-relative">
               <FaSearch className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
               <Form.Control
@@ -225,7 +292,7 @@ const AllBookingsPage = () => {
               />
             </div>
           </Col>
-          <Col md={3}>
+          <Col md={2}>
             <div className="position-relative">
               <FaFilter className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted" />
               <Form.Select
@@ -240,9 +307,9 @@ const AllBookingsPage = () => {
               </Form.Select>
             </div>
           </Col>
-          <Col md={4} className="d-flex align-items-center">
+          <Col md={2} className="d-flex align-items-center">
             <small className="text-muted">
-              Showing <strong>{filteredBookings.length}</strong> of <strong>{bookings.length}</strong> bookings
+              Showing <strong>{paginatedBookings.length}</strong> of <strong>{filteredBookings.length}</strong>
             </small>
           </Col>
         </Row>
@@ -254,6 +321,7 @@ const AllBookingsPage = () => {
           <table className="table">
             <thead>
               <tr>
+                <th>Booking ID</th>
                 <th>Room</th>
                 <th>Guest Details</th>
                 <th>Check-In</th>
@@ -263,9 +331,14 @@ const AllBookingsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredBookings.length > 0 ? (
-                filteredBookings.map((booking) => (
+              {paginatedBookings.length > 0 ? (
+                paginatedBookings.map((booking) => (
                   <tr key={booking.id}>
+                    <td>
+                      <small className="text-muted font-monospace">
+                        {generateBookingId(booking)}
+                      </small>
+                    </td>
                     <td>
                       <div className="d-flex align-items-center">
                         <FaHotel className="text-primary me-2" />
@@ -290,9 +363,7 @@ const AllBookingsPage = () => {
                     </td>
                     <td>
                       <small>
-                        {booking.checkIn?.toDate
-                          ? booking.checkIn.toDate().toLocaleString()
-                          : "N/A"}
+                        {formatDateOnly(booking.checkIn)}
                       </small>
                     </td>
                     <td>
@@ -333,7 +404,7 @@ const AllBookingsPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6}>
+                  <td colSpan={7}>
                     <EmptyState>
                       <FaHistory className="empty-icon" />
                       <h5>No bookings found</h5>
@@ -345,6 +416,56 @@ const AllBookingsPage = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-center mt-4 mb-3">
+            <Pagination>
+              <Pagination.First 
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+              />
+              <Pagination.Prev 
+                onClick={() => setCurrentPage(currentPage - 1)}
+                disabled={currentPage === 1}
+              />
+              
+              {[...Array(totalPages)].map((_, index) => {
+                const page = index + 1;
+                if (
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 2 && page <= currentPage + 2)
+                ) {
+                  return (
+                    <Pagination.Item
+                      key={page}
+                      active={page === currentPage}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </Pagination.Item>
+                  );
+                } else if (
+                  page === currentPage - 3 ||
+                  page === currentPage + 3
+                ) {
+                  return <Pagination.Ellipsis key={page} />;
+                }
+                return null;
+              })}
+              
+              <Pagination.Next 
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              />
+              <Pagination.Last 
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages}
+              />
+            </Pagination>
+          </div>
+        )}
       </TableContainer>
 
       {/* Booking Details Modal */}
@@ -353,7 +474,7 @@ const AllBookingsPage = () => {
           <Modal.Header closeButton>
             <Modal.Title>
               <FaEye className="me-2" />
-              Booking Details - Room {selectedBooking?.roomNo}
+              {selectedBooking && generateBookingId(selectedBooking)}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -366,6 +487,9 @@ const AllBookingsPage = () => {
                         <FaUser className="me-2 text-primary" />
                         Guest Information
                       </h6>
+                      <div className="mb-2">
+                        <strong>Booking ID:</strong> {generateBookingId(selectedBooking)}
+                      </div>
                       <div className="mb-2">
                         <strong>Name:</strong> {selectedBooking.guestName}
                       </div>
@@ -393,12 +517,12 @@ const AllBookingsPage = () => {
                       </h6>
                       <div className="mb-2">
                         <strong>Check-In:</strong>{" "}
-                        {formatTimestamp(selectedBooking.checkIn)}
+                        {formatDateOnly(selectedBooking.checkIn)}
                       </div>
                       <div className="mb-2">
                         <strong>Check-Out:</strong>{" "}
                         {selectedBooking.checkOut
-                          ? formatTimestamp(selectedBooking.checkOut)
+                          ? formatDateOnly(selectedBooking.checkOut)
                           : "Not Checked Out"}
                       </div>
                       <div>

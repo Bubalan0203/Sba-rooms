@@ -32,12 +32,14 @@ import {
   ModalStyled,
   FormCard
 } from "../components/StyledComponents";
-import { FaBook, FaBed, FaUser, FaCreditCard, FaCheck, FaPlus } from "react-icons/fa";
+import { FaBook, FaBed, FaUser, FaCreditCard, FaCheck, FaPlus, FaCamera, FaImage, FaCheckCircle } from "react-icons/fa";
 
 function BookingPage() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [successBookingData, setSuccessBookingData] = useState(null);
 
   // Form State
   const [step, setStep] = useState(0);
@@ -50,8 +52,13 @@ function BookingPage() {
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [idProofBase64, setIdProofBase64] = useState("");
+  const [showImageOptions, setShowImageOptions] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Validation errors
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
 
   const steps = ["Select Rooms", "Guest & Payment Details", "Review & Confirm"];
 
@@ -82,12 +89,79 @@ function BookingPage() {
     setGuestPhone("");
     setIdProofBase64("");
     setIsSubmitting(false);
+    setNameError("");
+    setPhoneError("");
+    setShowImageOptions(false);
   };
 
+  // Validation functions
+  const validateName = (name) => {
+    const nameRegex = /^[a-zA-Z\s]+$/;
+    if (!name.trim()) {
+      return "Name is required";
+    }
+    if (!nameRegex.test(name)) {
+      return "Name should only contain alphabets and spaces";
+    }
+    return "";
+  };
+
+  const validatePhone = (phone) => {
+    const phoneRegex = /^\d{10}$/;
+    if (!phone.trim()) {
+      return "Phone number is required";
+    }
+    if (!phoneRegex.test(phone)) {
+      return "Phone number must be exactly 10 digits";
+    }
+    return "";
+  };
+
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    setGuestName(value);
+    setNameError(validateName(value));
+  };
+
+  const handlePhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+    if (value.length <= 10) {
+      setGuestPhone(value);
+      setPhoneError(validatePhone(value));
+    }
+  };
+
+  const handleAmountChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ''); // Only allow digits
+    setCommonAmount(value);
+  };
+
+  const handlePersonsChange = (roomId, value) => {
+    const numericValue = value.replace(/\D/g, ''); // Only allow digits
+    handleDetailChange(roomId, "numberOfPersons", numericValue);
+  };
+
+  const handleRoomAmountChange = (roomId, value) => {
+    const numericValue = value.replace(/\D/g, ''); // Only allow digits
+    handleDetailChange(roomId, "amount", numericValue);
+  };
   const handleNext = () => {
     if (step === 0 && selectedRooms.length !== parseInt(numRooms, 10)) {
       alert(`Please select exactly ${numRooms} room(s).`);
       return;
+    }
+    if (step === 1) {
+      const nameErr = validateName(guestName);
+      const phoneErr = validatePhone(guestPhone);
+      
+      if (nameErr || phoneErr || !idProofBase64) {
+        setNameError(nameErr);
+        setPhoneError(phoneErr);
+        if (!idProofBase64) {
+          alert("Please upload ID proof");
+        }
+        return;
+      }
     }
     setStep(step + 1);
   };
@@ -122,7 +196,7 @@ function BookingPage() {
   };
 
   const handleCommonAmountChange = (e) => {
-    const newAmount = e.target.value;
+    const newAmount = e.target.value.replace(/\D/g, ''); // Only allow digits
     setCommonAmount(newAmount);
     setRoomDetails((prevDetails) => {
       const newDetails = { ...prevDetails };
@@ -133,25 +207,61 @@ function BookingPage() {
     });
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e, isCamera = false) => {
     const file = e.target.files[0];
-    if (file) {
+    if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setIdProofBase64(reader.result);
+        setShowImageOptions(false);
       };
       reader.readAsDataURL(file);
+    } else if (file) {
+      alert("Please select a valid image file (JPG, PNG, JPEG)");
     }
+  };
+
+  const handleCameraCapture = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.capture = 'environment';
+    input.onchange = (e) => handleFileChange(e, true);
+    input.click();
+  };
+
+  const handleGalleryUpload = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/jpg,image/png';
+    input.onchange = handleFileChange;
+    input.click();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!guestName || !guestPhone || !idProofBase64) {
-      alert("Cannot submit. Guest details are missing.");
+    
+    const nameErr = validateName(guestName);
+    const phoneErr = validatePhone(guestPhone);
+    
+    if (nameErr || phoneErr || !idProofBase64) {
+      setNameError(nameErr);
+      setPhoneError(phoneErr);
+      if (!idProofBase64) {
+        alert("Please upload ID proof");
+      }
       return;
     }
+    
     setIsSubmitting(true);
     try {
+      const bookingData = {
+        rooms: selectedRooms.length,
+        guestName,
+        phone: `+91${guestPhone}`,
+        totalAmount: totalAmount
+      };
+      
       await runTransaction(db, async (transaction) => {
         const bookingsCollection = collection(db, "bookings");
         for (const roomId of selectedRooms) {
@@ -169,7 +279,7 @@ function BookingPage() {
             ),
             amount: finalAmount,
             guestName: guestName,
-            customerPhone: guestPhone,
+            customerPhone: `+91${guestPhone}`,
             idProof: idProofBase64,
             checkIn: serverTimestamp(),
             checkOut: null,
@@ -179,7 +289,9 @@ function BookingPage() {
           transaction.update(roomRef, { status: "Booked" });
         }
       });
-      alert("Booking successful!");
+      
+      setSuccessBookingData(bookingData);
+      setSuccessModalOpen(true);
       handleCloseModal();
     } catch (error) {
       alert("Booking failed! The selected room(s) might have just been booked.");
@@ -384,29 +496,67 @@ function BookingPage() {
                         <Form.Control
                           size="lg"
                           value={guestName}
-                          onChange={(e) => setGuestName(e.target.value)}
+                          onChange={handleNameChange}
                           placeholder="Enter guest name"
+                          isInvalid={!!nameError}
                         />
+                        <Form.Control.Feedback type="invalid">
+                          {nameError}
+                        </Form.Control.Feedback>
                       </Form.Group>
                       
                       <Form.Group className="mb-3">
                         <Form.Label className="fw-bold">Phone Number</Form.Label>
+                        <div className="input-group">
+                          <span className="input-group-text">+91</span>
                         <Form.Control
                           size="lg"
                           value={guestPhone}
-                          onChange={(e) => setGuestPhone(e.target.value)}
+                            onChange={handlePhoneChange}
                           placeholder="Enter phone number"
+                            maxLength={10}
+                            isInvalid={!!phoneError}
                         />
+                          <Form.Control.Feedback type="invalid">
+                            {phoneError}
+                          </Form.Control.Feedback>
+                        </div>
                       </Form.Group>
                       
                       <Form.Group className="mb-3">
                         <Form.Label className="fw-bold">ID Proof</Form.Label>
-                        <Form.Control 
-                          type="file" 
-                          size="lg"
-                          onChange={handleFileChange}
-                          accept="image/*"
-                        />
+                        <div className="d-grid gap-2">
+                          <ActionButton
+                            variant="outline-primary"
+                            onClick={() => setShowImageOptions(!showImageOptions)}
+                          >
+                            <FaImage className="me-2" />
+                            Upload ID Proof
+                          </ActionButton>
+                          
+                          {showImageOptions && (
+                            <div className="d-flex gap-2">
+                              <ActionButton
+                                variant="outline-success"
+                                size="sm"
+                                onClick={handleCameraCapture}
+                                className="flex-fill"
+                              >
+                                <FaCamera className="me-2" />
+                                Take Photo
+                              </ActionButton>
+                              <ActionButton
+                                variant="outline-info"
+                                size="sm"
+                                onClick={handleGalleryUpload}
+                                className="flex-fill"
+                              >
+                                <FaImage className="me-2" />
+                                From Gallery
+                              </ActionButton>
+                            </div>
+                          )}
+                        </div>
                       </Form.Group>
                       
                       {idProofBase64 && (
@@ -429,7 +579,7 @@ function BookingPage() {
                           type="number"
                           size="lg"
                           value={commonAmount}
-                          onChange={handleCommonAmountChange}
+                          onChange={handleAmountChange}
                           placeholder="Enter amount for all rooms"
                         />
                       </Form.Group>
@@ -445,17 +595,13 @@ function BookingPage() {
                                   <Form.Group>
                                     <Form.Label>Guests</Form.Label>
                                     <Form.Control
-                                      type="number"
+                                      type="text"
                                       placeholder="Number of persons"
                                       value={
                                         roomDetails[roomId]?.numberOfPersons || ""
                                       }
                                       onChange={(e) =>
-                                        handleDetailChange(
-                                          roomId,
-                                          "numberOfPersons",
-                                          e.target.value
-                                        )
+                                        handlePersonsChange(roomId, e.target.value)
                                       }
                                     />
                                   </Form.Group>
@@ -464,15 +610,11 @@ function BookingPage() {
                                   <Form.Group>
                                     <Form.Label>Amount (₹)</Form.Label>
                                     <Form.Control
-                                      type="number"
+                                      type="text"
                                       placeholder="Room amount"
                                       value={roomDetails[roomId]?.amount || ""}
                                       onChange={(e) =>
-                                        handleDetailChange(
-                                          roomId,
-                                          "amount",
-                                          e.target.value
-                                        )
+                                        handleRoomAmountChange(roomId, e.target.value)
                                       }
                                     />
                                   </Form.Group>
@@ -510,7 +652,7 @@ function BookingPage() {
                             <strong>Name:</strong> {guestName}
                           </div>
                           <div className="mb-3">
-                            <strong>Phone:</strong> {guestPhone}
+                            <strong>Phone:</strong> +91{guestPhone}
                           </div>
                           {idProofBase64 && (
                             <div>
@@ -588,6 +730,37 @@ function BookingPage() {
               </ActionButton>
             )}
           </Modal.Footer>
+        </Modal>
+      </ModalStyled>
+
+      {/* Success Modal */}
+      <ModalStyled>
+        <Modal show={successModalOpen} onHide={() => setSuccessModalOpen(false)} centered>
+          <Modal.Body className="text-center py-5">
+            <div className="mb-4">
+              <FaCheckCircle size={80} className="text-success" />
+            </div>
+            <h3 className="text-success mb-3">Booking Successful!</h3>
+            {successBookingData && (
+              <div className="text-start">
+                <p><strong>Guest:</strong> {successBookingData.guestName}</p>
+                <p><strong>Phone:</strong> {successBookingData.phone}</p>
+                <p><strong>Rooms:</strong> {successBookingData.rooms}</p>
+                <p><strong>Total Amount:</strong> ₹{successBookingData.totalAmount.toLocaleString()}</p>
+              </div>
+            )}
+            <p className="text-muted mb-4">
+              Your booking has been confirmed successfully. You can view it in the Active Bookings section.
+            </p>
+            <ActionButton 
+              variant="success" 
+              onClick={() => setSuccessModalOpen(false)}
+              size="lg"
+            >
+              <FaCheck className="me-2" />
+              Continue
+            </ActionButton>
+          </Modal.Body>
         </Modal>
       </ModalStyled>
     </StyledContainer>

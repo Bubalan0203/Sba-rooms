@@ -141,6 +141,23 @@ p {
   box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
 }
 
+.form-control.is-invalid {
+  border-color: var(--danger-color);
+}
+
+.form-control.is-invalid:focus {
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 3px rgb(220 38 38 / 0.1);
+}
+
+.invalid-feedback {
+  display: block;
+  width: 100%;
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--danger-color);
+}
+
 .table {
   border-radius: var(--border-radius-lg);
   overflow: hidden;
@@ -187,6 +204,35 @@ p {
   padding: 1.5rem;
 }
 
+/* Pagination Styles */
+.pagination {
+  --bs-pagination-border-radius: var(--border-radius);
+  --bs-pagination-color: var(--gray-600);
+  --bs-pagination-bg: white;
+  --bs-pagination-border-color: var(--gray-300);
+  --bs-pagination-hover-color: var(--primary-color);
+  --bs-pagination-hover-bg: var(--gray-100);
+  --bs-pagination-hover-border-color: var(--gray-300);
+  --bs-pagination-focus-color: var(--primary-color);
+  --bs-pagination-focus-bg: var(--gray-100);
+  --bs-pagination-focus-box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+  --bs-pagination-active-color: white;
+  --bs-pagination-active-bg: var(--primary-color);
+  --bs-pagination-active-border-color: var(--primary-color);
+  --bs-pagination-disabled-color: var(--gray-400);
+  --bs-pagination-disabled-bg: var(--gray-100);
+  --bs-pagination-disabled-border-color: var(--gray-300);
+}
+
+.pagination .page-link {
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+}
+
+.pagination .page-item.active .page-link {
+  font-weight: 600;
+}
+
 /* Custom Utilities */
 .text-gradient {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
@@ -220,6 +266,23 @@ p {
 .hover-lift:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+}
+
+/* Input Group Styles */
+.input-group-text {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300);
+  color: var(--gray-600);
+  font-weight: 600;
+  border-radius: var(--border-radius) 0 0 var(--border-radius);
+}
+
+.input-group .form-control {
+  border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.input-group .form-control:focus {
+  z-index: 3;
 }
 
 /* Responsive Utilities */

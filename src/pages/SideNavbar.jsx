@@ -31,6 +31,7 @@ const SidebarContainer = styled.div`
   z-index: 1000;
   transform: translateX(-100%);
   transition: transform 0.3s ease;
+  overflow-y: auto;
   
   &.show {
     transform: translateX(0);
@@ -42,6 +43,10 @@ const SidebarContainer = styled.div`
     box-shadow: none;
     border-right: 1px solid #e5e7eb;
   }
+  
+  @media (min-width: 768px) and (max-width: 991px) {
+    width: 260px;
+  }
 `;
 
 const SidebarHeader = styled.div`
@@ -50,6 +55,9 @@ const SidebarHeader = styled.div`
   padding: 2rem;
   text-align: center;
   position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 `;
 
 const CloseButton = styled.button`
@@ -63,9 +71,16 @@ const CloseButton = styled.button`
   cursor: pointer;
   opacity: 0.8;
   transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   
   &:hover {
     opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
   }
   
   @media (min-width: 992px) {
@@ -76,11 +91,25 @@ const CloseButton = styled.button`
 const SidebarBody = styled.div`
   padding: 0;
   background: #f8fafc;
-  height: calc(100vh - 200px);
-  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
   
-  @media (min-width: 992px) {
-    height: calc(100vh - 180px);
+  /* Custom scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
   }
 `;
 
@@ -94,6 +123,7 @@ const NavItem = styled(NavLink)`
   transition: all 0.3s ease;
   border-left: 4px solid transparent;
   font-weight: 500;
+  position: relative;
   
   &:hover {
     background: rgba(37, 99, 235, 0.1);
@@ -106,25 +136,37 @@ const NavItem = styled(NavLink)`
     color: #2563eb;
     font-weight: 600;
     border-left-color: #2563eb;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      right: 1rem;
+      width: 6px;
+      height: 6px;
+      background: #2563eb;
+      border-radius: 50%;
+    }
   }
   
   .icon {
     font-size: 1.3rem;
     min-width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 `;
 
 const SidebarFooter = styled.div`
-  position: absolute;
+  position: sticky;
   bottom: 0;
-  left: 0;
-  right: 0;
   text-align: center;
   padding: 1.5rem;
   border-top: 1px solid #e5e7eb;
   background: white;
   font-size: 0.875rem;
   color: #6b7280;
+  margin-top: auto;
 `;
 
 const Overlay = styled.div`
@@ -155,10 +197,15 @@ const FloatingMenuButton = styled(Button)`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: none;
   background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   
   &:hover {
     transform: scale(1.05);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%);
   }
   
   @media (min-width: 992px) {
@@ -193,7 +240,7 @@ const SideNavbar = () => {
       <Overlay show={show} onClick={handleClose} />
 
       {/* Sidebar / Drawer */}
-      <SidebarContainer className={show ? 'show' : ''}>
+      <SidebarContainer className={`${show ? 'show' : ''} d-flex flex-column`}>
         <SidebarHeader>
           <CloseButton onClick={handleClose}>
             <FaTimes />
@@ -218,8 +265,6 @@ const SideNavbar = () => {
         </SidebarHeader>
 
         <SidebarBody>
-          {/* Navigation */}
-          <div className="flex-grow-1">
             {menuItems.map((item, index) => (
               <motion.div
                 key={item.path}
@@ -238,7 +283,6 @@ const SideNavbar = () => {
                 </NavItem>
               </motion.div>
             ))}
-          </div>
         </SidebarBody>
 
         {/* Footer */}
