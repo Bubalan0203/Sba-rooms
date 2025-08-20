@@ -60,12 +60,12 @@ const SideNavbar = () => {
       {/* Header Section */}
       <Box
         sx={{
-          p: { xs: 2, sm: 2.5, md: 3 },
+          p: { xs: 2, sm: 3 },
           background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
           color: 'white',
           position: 'relative',
           overflow: 'hidden',
-          minHeight: { xs: 120, sm: 140, md: 160 },
+          minHeight: { xs: 140, sm: 160 },
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -77,20 +77,18 @@ const SideNavbar = () => {
             onClick={handleDrawerToggle}
             sx={{
               position: 'absolute',
-              top: 8,
-              right: 8,
+              top: { xs: 8, sm: 12 },
+              right: { xs: 8, sm: 12 },
               color: 'white',
               zIndex: 1,
               backgroundColor: 'rgba(255, 255, 255, 0.1)',
               backdropFilter: 'blur(10px)',
-              width: 32,
-              height: 32,
               '&:hover': {
                 backgroundColor: 'rgba(255, 255, 255, 0.2)',
               },
             }}
           >
-            <CloseIcon sx={{ fontSize: '1.2rem' }} />
+            <CloseIcon />
           </IconButton>
         )}
 
@@ -98,10 +96,10 @@ const SideNavbar = () => {
         <Box
           sx={{
             position: 'absolute',
-            top: { xs: -10, sm: -15, md: -20 },
-            right: { xs: -10, sm: -15, md: -20 },
-            width: { xs: 50, sm: 60, md: 80 },
-            height: { xs: 50, sm: 60, md: 80 },
+            top: { xs: -15, sm: -20 },
+            right: { xs: -15, sm: -20 },
+            width: { xs: 60, sm: 80 },
+            height: { xs: 60, sm: 80 },
             borderRadius: '50%',
             background: 'rgba(255, 255, 255, 0.1)',
           }}
@@ -109,10 +107,10 @@ const SideNavbar = () => {
         <Box
           sx={{
             position: 'absolute',
-            bottom: { xs: -20, sm: -25, md: -30 },
-            left: { xs: -20, sm: -25, md: -30 },
-            width: { xs: 60, sm: 80, md: 100 },
-            height: { xs: 60, sm: 80, md: 100 },
+            bottom: { xs: -25, sm: -30 },
+            left: { xs: -25, sm: -30 },
+            width: { xs: 80, sm: 100 },
+            height: { xs: 80, sm: 100 },
             borderRadius: '50%',
             background: 'rgba(255, 255, 255, 0.05)',
           }}
@@ -121,11 +119,11 @@ const SideNavbar = () => {
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
           <Avatar
             sx={{
-              width: { xs: 48, sm: 56, md: 64 },
-              height: { xs: 48, sm: 56, md: 64 },
-              mb: { xs: 1, sm: 1.5, md: 2 },
+              width: { xs: 56, sm: 64 },
+              height: { xs: 56, sm: 64 },
+              mb: { xs: 1.5, sm: 2 },
               bgcolor: 'rgba(255, 255, 255, 0.2)',
-              fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
+              fontSize: { xs: '1.3rem', sm: '1.5rem' },
               fontWeight: 800,
               backdropFilter: 'blur(10px)',
               border: '2px solid rgba(255, 255, 255, 0.3)',
@@ -139,7 +137,7 @@ const SideNavbar = () => {
             sx={{ 
               fontWeight: 700, 
               mb: 0.5,
-              fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+              fontSize: { xs: '1.1rem', sm: '1.25rem' },
               textAlign: 'center',
             }}
           >
@@ -151,17 +149,16 @@ const SideNavbar = () => {
             sx={{
               bgcolor: 'rgba(255, 255, 255, 0.2)',
               color: 'white',
-              fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+              fontSize: { xs: '0.7rem', sm: '0.75rem' },
               fontWeight: 500,
               backdropFilter: 'blur(10px)',
-              height: { xs: 20, sm: 24, md: 28 }
             }}
           />
         </Box>
       </Box>
 
       {/* Navigation Menu */}
-      <Box sx={{ flexGrow: 1, p: { xs: 0.5, sm: 1, md: 2 } }}>
+      <Box sx={{ flexGrow: 1, p: { xs: 1, sm: 2 } }}>
         <List sx={{ p: 0 }}>
           {menuItems.map((item, index) => (
             <motion.div
@@ -175,23 +172,23 @@ const SideNavbar = () => {
                 to={item.path}
                 onClick={isMobile ? handleDrawerToggle : undefined}
                 sx={{
-                  borderRadius: { xs: 8, sm: 12, md: 16 },
-                  mb: { xs: 0.25, sm: 0.5, md: 1 },
-                  mx: { xs: 0.5, sm: 0.75, md: 1 },
-                  py: { xs: 0.75, sm: 1, md: 1.5 },
-                  px: { xs: 1, sm: 1.5, md: 2 },
+                  borderRadius: { xs: 12, sm: 16 },
+                  mb: { xs: 0.5, sm: 1 },
+                  mx: { xs: 0.5, sm: 1 },
+                  py: { xs: 1, sm: 1.5 },
+                  px: { xs: 1.5, sm: 2 },
                   color: theme.palette.text.primary,
                   textDecoration: 'none',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   position: 'relative',
                   overflow: 'hidden',
-                  minHeight: { xs: 36, sm: 44, md: 48 },
+                  minHeight: { xs: 44, sm: 48 },
                   '&:hover': {
                     backgroundColor: `${item.color}15`,
-                    transform: { xs: 'translateX(2px)', sm: 'translateX(4px)', md: 'translateX(8px)' },
+                    transform: { xs: 'translateX(4px)', sm: 'translateX(8px)' },
                     boxShadow: `0 4px 12px ${item.color}20`,
                     '&::before': {
-                      width: { xs: '2px', sm: '3px', md: '4px' },
+                      width: { xs: '3px', sm: '4px' },
                     },
                   },
                   '&::before': {
@@ -203,7 +200,7 @@ const SideNavbar = () => {
                     width: 0,
                     backgroundColor: item.color,
                     transition: 'width 0.3s ease',
-                    borderRadius: { xs: '0 4px 4px 0', sm: '0 6px 6px 0', md: '0 8px 8px 0' },
+                    borderRadius: '0 8px 8px 0',
                   },
                   '&.active': {
                     backgroundColor: `${item.color}20`,
@@ -211,7 +208,7 @@ const SideNavbar = () => {
                     fontWeight: 600,
                     boxShadow: `0 4px 12px ${item.color}25`,
                     '&::before': {
-                      width: { xs: '2px', sm: '3px', md: '4px' },
+                      width: { xs: '3px', sm: '4px' },
                     },
                     '& .MuiListItemIcon-root': {
                       color: item.color,
@@ -225,10 +222,10 @@ const SideNavbar = () => {
                 <ListItemIcon
                   sx={{
                     color: theme.palette.text.secondary,
-                    minWidth: { xs: 32, sm: 40, md: 48 },
+                    minWidth: { xs: 40, sm: 48 },
                     transition: 'color 0.3s ease',
                     '& .MuiSvgIcon-root': {
-                      fontSize: { xs: '1.1rem', sm: '1.3rem', md: '1.5rem' },
+                      fontSize: { xs: '1.3rem', sm: '1.5rem' },
                     },
                   }}
                 >
@@ -237,7 +234,7 @@ const SideNavbar = () => {
                 <ListItemText
                   primary={item.text}
                   primaryTypographyProps={{
-                    fontSize: { xs: '0.8rem', sm: '0.9rem', md: '0.95rem' },
+                    fontSize: { xs: '0.9rem', sm: '0.95rem' },
                     fontWeight: 600,
                     lineHeight: 1.2,
                   }}
@@ -248,15 +245,15 @@ const SideNavbar = () => {
         </List>
       </Box>
 
-      <Divider sx={{ mx: { xs: 0.5, sm: 1, md: 2 } }} />
+      <Divider sx={{ mx: { xs: 1, sm: 2 } }} />
       
       {/* Footer */}
-      <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 }, textAlign: 'center' }}>
+      <Box sx={{ p: { xs: 2, sm: 3 }, textAlign: 'center' }}>
         <Typography 
           variant="caption" 
           color="text.secondary" 
           sx={{ 
-            fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
+            fontSize: { xs: '0.7rem', sm: '0.75rem' },
             fontWeight: 500,
           }}
         >
@@ -267,7 +264,7 @@ const SideNavbar = () => {
           color="text.secondary" 
           sx={{ 
             display: 'block', 
-            fontSize: { xs: '0.6rem', sm: '0.65rem', md: '0.7rem' }, 
+            fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
             mt: 0.5,
             opacity: 0.7,
           }}
@@ -289,15 +286,15 @@ const SideNavbar = () => {
           onClick={handleDrawerToggle}
           sx={{
             position: 'fixed',
-            top: 12,
-            left: 12,
+            top: { xs: 12, sm: 16 },
+            left: { xs: 12, sm: 16 },
             zIndex: 1300,
             backgroundColor: theme.palette.primary.main,
             color: 'white',
             boxShadow: '0 8px 32px rgba(37, 99, 235, 0.3)',
             backdropFilter: 'blur(10px)',
-            width: 44,
-            height: 44,
+            width: { xs: 48, sm: 56 },
+            height: { xs: 48, sm: 56 },
             '&:hover': {
               backgroundColor: theme.palette.primary.dark,
               transform: 'scale(1.05)',
@@ -306,7 +303,7 @@ const SideNavbar = () => {
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
-          <MenuIcon sx={{ fontSize: '1.3rem' }} />
+          <MenuIcon />
         </IconButton>
       )}
 

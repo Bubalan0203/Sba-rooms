@@ -19,7 +19,7 @@ function createWindow() {
 
   win.loadURL(
     isDev
-      ? 'http://localhost:3000'
+      ? 'https://sba-rooms.vercel.app/'
       : `file://${path.join(__dirname, '../build/index.html')}`
   );
 

@@ -175,224 +175,80 @@ const AllBookingsPage = () => {
   }
 
   return (
-    <Container 
-      maxWidth="xl" 
-      sx={{ 
-        py: { xs: 2, sm: 3, md: 4 }, 
-        px: { xs: 1, sm: 2, md: 3 },
-        ml: { xs: 0, md: '280px' },
-        width: { xs: '100%', md: 'calc(100% - 280px)' },
-        maxWidth: { xs: '100%', md: 'none' },
-      }}
-    >
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1, md: 3 } }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-          <Avatar sx={{ 
-            bgcolor: theme.palette.primary.main, 
-            width: { xs: 40, sm: 48 }, 
-            height: { xs: 40, sm: 48 } 
-          }}>
+          <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 48, height: 48 }}>
             <HistoryIcon />
           </Avatar>
           <Box>
-            <Typography 
-              variant="h4" 
-              sx={{ 
-                fontWeight: 700, 
-                color: theme.palette.text.primary,
-                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
-              }}
-            >
+            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
               All Bookings
             </Typography>
-            <Typography 
-              variant="body1" 
-              color="text.secondary"
-              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
-            >
+            <Typography variant="body1" color="text.secondary">
               Complete history of all guest bookings and transactions
             </Typography>
           </Box>
         </Box>
 
         {/* Stats Cards */}
-        <Grid container spacing={{ xs: 2, sm: 2, md: 3 }} sx={{ mb: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={6} sm={3}>
-            <Card sx={{ 
-              borderRadius: 2, 
-              border: `1px solid ${theme.palette.primary.main}30`,
-              minHeight: { xs: 100, sm: 120 }
-            }}>
-              <CardContent sx={{ 
-                textAlign: 'center', 
-                py: { xs: 1.5, sm: 2 },
-                px: { xs: 1, sm: 2 },
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                height: '100%'
-              }}>
-                <Avatar sx={{ 
-                  bgcolor: theme.palette.primary.light + '30', 
-                  color: theme.palette.primary.main, 
-                  mx: 'auto', 
-                  mb: 1, 
-                  width: { xs: 32, sm: 40 }, 
-                  height: { xs: 32, sm: 40 } 
-                }}>
+            <Card sx={{ borderRadius: 2, border: `1px solid ${theme.palette.primary.main}30` }}>
+              <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                <Avatar sx={{ bgcolor: theme.palette.primary.light + '30', color: theme.palette.primary.main, mx: 'auto', mb: 1, width: 40, height: 40 }}>
                   <HistoryIcon />
                 </Avatar>
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    color: theme.palette.primary.main,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}
-                >
+                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
                   {stats.total}
                 </Typography>
-                <Typography 
-                  variant="caption" 
-                  color="text.secondary"
-                  sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
-                >
+                <Typography variant="caption" color="text.secondary">
                   Total Bookings
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={6} sm={3}>
-            <Card sx={{ 
-              borderRadius: 2, 
-              border: `1px solid ${theme.palette.success.main}30`,
-              minHeight: { xs: 100, sm: 120 }
-            }}>
-              <CardContent sx={{ 
-                textAlign: 'center', 
-                py: { xs: 1.5, sm: 2 },
-                px: { xs: 1, sm: 2 },
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                height: '100%'
-              }}>
-                <Avatar sx={{ 
-                  bgcolor: theme.palette.success.light + '30', 
-                  color: theme.palette.success.main, 
-                  mx: 'auto', 
-                  mb: 1, 
-                  width: { xs: 32, sm: 40 }, 
-                  height: { xs: 32, sm: 40 } 
-                }}>
+            <Card sx={{ borderRadius: 2, border: `1px solid ${theme.palette.success.main}30` }}>
+              <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                <Avatar sx={{ bgcolor: theme.palette.success.light + '30', color: theme.palette.success.main, mx: 'auto', mb: 1, width: 40, height: 40 }}>
                   <HotelIcon />
                 </Avatar>
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    color: theme.palette.success.main,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}
-                >
+                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
                   {stats.active}
                 </Typography>
-                <Typography 
-                  variant="caption" 
-                  color="text.secondary"
-                  sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
-                >
+                <Typography variant="caption" color="text.secondary">
                   Active
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={6} sm={3}>
-            <Card sx={{ 
-              borderRadius: 2, 
-              border: `1px solid ${theme.palette.info.main}30`,
-              minHeight: { xs: 100, sm: 120 }
-            }}>
-              <CardContent sx={{ 
-                textAlign: 'center', 
-                py: { xs: 1.5, sm: 2 },
-                px: { xs: 1, sm: 2 },
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                height: '100%'
-              }}>
-                <Avatar sx={{ 
-                  bgcolor: theme.palette.info.light + '30', 
-                  color: theme.palette.info.main, 
-                  mx: 'auto', 
-                  mb: 1, 
-                  width: { xs: 32, sm: 40 }, 
-                  height: { xs: 32, sm: 40 } 
-                }}>
+            <Card sx={{ borderRadius: 2, border: `1px solid ${theme.palette.info.main}30` }}>
+              <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                <Avatar sx={{ bgcolor: theme.palette.info.light + '30', color: theme.palette.info.main, mx: 'auto', mb: 1, width: 40, height: 40 }}>
                   <CalendarIcon />
                 </Avatar>
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    color: theme.palette.info.main,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}
-                >
+                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.info.main }}>
                   {stats.completed}
                 </Typography>
-                <Typography 
-                  variant="caption" 
-                  color="text.secondary"
-                  sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
-                >
+                <Typography variant="caption" color="text.secondary">
                   Completed
                 </Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={6} sm={3}>
-            <Card sx={{ 
-              borderRadius: 2, 
-              border: `1px solid ${theme.palette.warning.main}30`,
-              minHeight: { xs: 100, sm: 120 }
-            }}>
-              <CardContent sx={{ 
-                textAlign: 'center', 
-                py: { xs: 1.5, sm: 2 },
-                px: { xs: 1, sm: 2 },
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                height: '100%'
-              }}>
-                <Avatar sx={{ 
-                  bgcolor: theme.palette.warning.light + '30', 
-                  color: theme.palette.warning.main, 
-                  mx: 'auto', 
-                  mb: 1, 
-                  width: { xs: 32, sm: 40 }, 
-                  height: { xs: 32, sm: 40 } 
-                }}>
+            <Card sx={{ borderRadius: 2, border: `1px solid ${theme.palette.warning.main}30` }}>
+              <CardContent sx={{ textAlign: 'center', py: 2 }}>
+                <Avatar sx={{ bgcolor: theme.palette.warning.light + '30', color: theme.palette.warning.main, mx: 'auto', mb: 1, width: 40, height: 40 }}>
                   <MoneyIcon />
                 </Avatar>
-                <Typography 
-                  variant="h5" 
-                  sx={{ 
-                    fontWeight: 700, 
-                    color: theme.palette.warning.main,
-                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
-                  }}
-                >
+                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>
                   ₹{stats.totalRevenue.toLocaleString()}
                 </Typography>
-                <Typography 
-                  variant="caption" 
-                  color="text.secondary"
-                  sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}
-                >
+                <Typography variant="caption" color="text.secondary">
                   Total Revenue
                 </Typography>
               </CardContent>
@@ -401,8 +257,8 @@ const AllBookingsPage = () => {
         </Grid>
 
         {/* Filters */}
-        <Paper sx={{ p: { xs: 2, sm: 2.5 }, borderRadius: 2, mb: 3 }}>
-          <Grid container spacing={{ xs: 2, sm: 2 }} alignItems="center">
+        <Paper sx={{ p: 2, borderRadius: 2, mb: 3 }}>
+          <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
@@ -417,12 +273,7 @@ const AllBookingsPage = () => {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ 
-                  '& .MuiOutlinedInput-root': { borderRadius: 2 },
-                  '& .MuiInputBase-input': { 
-                    fontSize: { xs: '0.875rem', sm: '1rem' } 
-                  }
-                }}
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={3}>
@@ -442,14 +293,7 @@ const AllBookingsPage = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={12} md={5}>
-              <Typography 
-                variant="body2" 
-                color="text.secondary"
-                sx={{ 
-                  fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                  textAlign: { xs: 'center', md: 'left' }
-                }}
-              >
+              <Typography variant="body2" color="text.secondary">
                 Showing {filteredBookings.length} of {bookings.length} bookings
               </Typography>
             </Grid>
@@ -464,57 +308,26 @@ const AllBookingsPage = () => {
         transition={{ duration: 0.5 }}
       >
         <Paper sx={{ borderRadius: 3, overflow: 'hidden', boxShadow: theme.shadows[2] }}>
-          <TableContainer sx={{ maxHeight: { xs: '70vh', sm: 'none' } }}>
+          <TableContainer>
             <Table>
               <TableHead>
                 <TableRow sx={{ bgcolor: theme.palette.grey[50] }}>
-                  <TableCell sx={{ 
-                    fontWeight: 600, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    py: { xs: 1, sm: 2 }
-                  }}>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                     Room
                   </TableCell>
-                  <TableCell sx={{ 
-                    fontWeight: 600, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    py: { xs: 1, sm: 2 }
-                  }}>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                     Guest Details
                   </TableCell>
-                  <TableCell sx={{ 
-                    fontWeight: 600, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    py: { xs: 1, sm: 2 },
-                    display: { xs: 'none', sm: 'table-cell' }
-                  }}>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                     Check-In
                   </TableCell>
-                  <TableCell sx={{ 
-                    fontWeight: 600, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    py: { xs: 1, sm: 2 }
-                  }}>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                     Status
                   </TableCell>
-                  <TableCell sx={{ 
-                    fontWeight: 600, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    py: { xs: 1, sm: 2 }
-                  }}>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                     Amount
                   </TableCell>
-                  <TableCell sx={{ 
-                    fontWeight: 600, 
-                    color: theme.palette.text.primary,
-                    fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                    py: { xs: 1, sm: 2 }
-                  }}>
+                  <TableCell sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                     Actions
                   </TableCell>
                 </TableRow>
@@ -529,91 +342,39 @@ const AllBookingsPage = () => {
                         borderLeft: `4px solid ${getStatusColor(booking.status)}30`,
                       }}
                     >
-                      <TableCell sx={{ py: { xs: 1, sm: 2 } }}>
+                      <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ 
-                            width: { xs: 28, sm: 32 }, 
-                            height: { xs: 28, sm: 32 }, 
-                            bgcolor: theme.palette.primary.main, 
-                            fontSize: { xs: '0.75rem', sm: '0.875rem' } 
-                          }}>
+                          <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main, fontSize: '0.875rem' }}>
                             {booking.roomNo}
                           </Avatar>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
-                              fontWeight: 600,
-                              fontSize: { xs: '0.8rem', sm: '0.875rem' },
-                              display: { xs: 'none', sm: 'block' }
-                            }}
-                          >
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             Room {booking.roomNo}
                           </Typography>
                         </Box>
                       </TableCell>
-                      <TableCell sx={{ py: { xs: 1, sm: 2 } }}>
+                      <TableCell>
                         <Box>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
-                              fontWeight: 600,
-                              fontSize: { xs: '0.8rem', sm: '0.875rem' }
-                            }}
-                          >
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
                             {booking.guestName}
                           </Typography>
-                          <Typography 
-                            variant="caption" 
-                            color="text.secondary"
-                            sx={{ 
-                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                              display: { xs: 'none', sm: 'block' }
-                            }}
-                          >
+                          <Typography variant="caption" color="text.secondary">
                             {booking.customerPhone}
                           </Typography>
-                          <Typography 
-                            variant="caption" 
-                            color="text.secondary"
-                            sx={{ 
-                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                              display: 'block'
-                            }}
-                          >
+                          <br />
+                          <Typography variant="caption" color="text.secondary">
                             {booking.numberOfPersons} guest{booking.numberOfPersons > 1 ? 's' : ''}
-                          </Typography>
-                          {/* Show check-in on mobile */}
-                          <Typography 
-                            variant="caption" 
-                            color="text.secondary"
-                            sx={{ 
-                              fontSize: '0.7rem',
-                              display: { xs: 'block', sm: 'none' }
-                            }}
-                          >
-                            {booking.checkIn?.toDate ? booking.checkIn.toDate().toLocaleDateString() : 'N/A'}
                           </Typography>
                         </Box>
                       </TableCell>
-                      <TableCell sx={{ 
-                        py: { xs: 1, sm: 2 },
-                        display: { xs: 'none', sm: 'table-cell' }
-                      }}>
-                        <Typography 
-                          variant="body2"
-                          sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                        >
+                      <TableCell>
+                        <Typography variant="body2">
                           {booking.checkIn?.toDate ? booking.checkIn.toDate().toLocaleDateString() : 'N/A'}
                         </Typography>
-                        <Typography 
-                          variant="caption" 
-                          color="text.secondary"
-                          sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-                        >
+                        <Typography variant="caption" color="text.secondary">
                           {booking.checkIn?.toDate ? booking.checkIn.toDate().toLocaleTimeString() : ''}
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ py: { xs: 1, sm: 2 } }}>
+                      <TableCell>
                         <Chip
                           label={booking.status}
                           size="small"
@@ -622,51 +383,38 @@ const AllBookingsPage = () => {
                             color: getStatusColor(booking.status),
                             fontWeight: 600,
                             borderRadius: 2,
-                            fontSize: { xs: '0.65rem', sm: '0.75rem' },
-                            height: { xs: 20, sm: 24 }
                           }}
                         />
                       </TableCell>
-                      <TableCell sx={{ py: { xs: 1, sm: 2 } }}>
-                        <Typography 
-                          variant="body2" 
-                          sx={{ 
-                            fontWeight: 600, 
-                            color: theme.palette.success.main,
-                            fontSize: { xs: '0.8rem', sm: '0.875rem' }
-                          }}
-                        >
+                      <TableCell>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.success.main }}>
                           ₹{booking.amount?.toLocaleString()}
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ py: { xs: 1, sm: 2 } }}>
-                        <Box sx={{ 
-                          display: 'flex', 
-                          gap: { xs: 0.5, sm: 1 },
-                          flexDirection: { xs: 'column', sm: 'row' }
-                        }}>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
                           <Tooltip title="View Details">
                             <IconButton
-                              size={isMobile ? "small" : "small"}
+                              size="small"
                               onClick={() => handleViewDetails(booking)}
                               sx={{
                                 color: theme.palette.primary.main,
                                 '&:hover': { bgcolor: `${theme.palette.primary.main}20` },
                               }}
                             >
-                              <ViewIcon fontSize={isMobile ? "small" : "small"} />
+                              <ViewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                           <Tooltip title="Download Bill">
                             <IconButton
-                              size={isMobile ? "small" : "small"}
+                              size="small"
                               onClick={() => handleGenerateBill(booking)}
                               sx={{
                                 color: theme.palette.success.main,
                                 '&:hover': { bgcolor: `${theme.palette.success.main}20` },
                               }}
                             >
-                              <DownloadIcon fontSize={isMobile ? "small" : "small"} />
+                              <DownloadIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         </Box>
@@ -675,27 +423,12 @@ const AllBookingsPage = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} sx={{ textAlign: 'center', py: { xs: 3, sm: 4 } }}>
-                      <HistoryIcon sx={{ 
-                        fontSize: { xs: 32, sm: 48 }, 
-                        color: theme.palette.grey[400], 
-                        mb: 2 
-                      }} />
-                      <Typography 
-                        variant="h6" 
-                        color="text.secondary" 
-                        sx={{ 
-                          mb: 1,
-                          fontSize: { xs: '1rem', sm: '1.25rem' }
-                        }}
-                      >
+                    <TableCell colSpan={6} sx={{ textAlign: 'center', py: 6 }}>
+                      <HistoryIcon sx={{ fontSize: 48, color: theme.palette.grey[400], mb: 2 }} />
+                      <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
                         No bookings found
                       </Typography>
-                      <Typography 
-                        variant="body2" 
-                        color="text.secondary"
-                        sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                      >
+                      <Typography variant="body2" color="text.secondary">
                         {searchTerm || statusFilter !== 'All' 
                           ? 'Try adjusting your search or filter criteria'
                           : 'Bookings will appear here once guests check in'
@@ -717,112 +450,38 @@ const AllBookingsPage = () => {
         maxWidth="md"
         fullWidth
         PaperProps={{
-          sx: { 
-            borderRadius: 3, 
-            p: 1,
-            mx: { xs: 1, sm: 0 },
-            width: { xs: 'calc(100% - 16px)', sm: 'auto' }
-          }
+          sx: { borderRadius: 3, p: 1 }
         }}
       >
-        <DialogTitle sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          fontWeight: 600,
-          fontSize: { xs: '1.1rem', sm: '1.25rem' },
-          py: { xs: 2, sm: 3 }
-        }}>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 600 }}>
           Booking Details - Room {selectedBooking?.roomNo}
           <IconButton onClick={handleCloseDialog} size="small">
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ px: { xs: 2, sm: 3 } }}>
+        <DialogContent>
           {selectedBooking && (
-            <Grid container spacing={{ xs: 2, sm: 3 }}>
+            <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <Paper sx={{ 
-                  p: { xs: 2, sm: 3 }, 
-                  borderRadius: 2, 
-                  bgcolor: theme.palette.grey[50] 
-                }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontWeight: 600, 
-                      mb: 2, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 1,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
-                    }}
-                  >
+                <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <PersonIcon color="primary" />
                     Guest Information
                   </Typography>
                   <Box sx={{ mb: 2 }}>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                    >
-                      Guest Name
-                    </Typography>
-                    <Typography 
-                      variant="body1" 
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: { xs: '0.9rem', sm: '1rem' }
-                      }}
-                    >
-                      {selectedBooking.guestName}
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary">Guest Name</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600 }}>{selectedBooking.guestName}</Typography>
                   </Box>
                   <Box sx={{ mb: 2 }}>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                    >
-                      Phone Number
-                    </Typography>
-                    <Typography 
-                      variant="body1" 
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: { xs: '0.9rem', sm: '1rem' }
-                      }}
-                    >
-                      {selectedBooking.customerPhone}
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary">Phone Number</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600 }}>{selectedBooking.customerPhone}</Typography>
                   </Box>
                   <Box sx={{ mb: 2 }}>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                    >
-                      Number of Persons
-                    </Typography>
-                    <Typography 
-                      variant="body1" 
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: { xs: '0.9rem', sm: '1rem' }
-                      }}
-                    >
-                      {selectedBooking.numberOfPersons}
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary">Number of Persons</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600 }}>{selectedBooking.numberOfPersons}</Typography>
                   </Box>
                   <Box>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                    >
-                      Status
-                    </Typography>
+                    <Typography variant="body2" color="text.secondary">Status</Typography>
                     <Chip
                       label={selectedBooking.status}
                       size="small"
@@ -831,8 +490,6 @@ const AllBookingsPage = () => {
                         color: getStatusColor(selectedBooking.status),
                         fontWeight: 600,
                         mt: 0.5,
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                        height: { xs: 24, sm: 28 }
                       }}
                     />
                   </Box>
@@ -840,77 +497,26 @@ const AllBookingsPage = () => {
               </Grid>
               
               <Grid item xs={12} md={6}>
-                <Paper sx={{ 
-                  p: { xs: 2, sm: 3 }, 
-                  borderRadius: 2, 
-                  bgcolor: theme.palette.grey[50] 
-                }}>
-                  <Typography 
-                    variant="h6" 
-                    sx={{ 
-                      fontWeight: 600, 
-                      mb: 2, 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 1,
-                      fontSize: { xs: '1rem', sm: '1.25rem' }
-                    }}
-                  >
+                <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <CalendarIcon color="primary" />
                     Booking Timeline
                   </Typography>
                   <Box sx={{ mb: 2 }}>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                    >
-                      Check-In Time
-                    </Typography>
-                    <Typography 
-                      variant="body1" 
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: { xs: '0.9rem', sm: '1rem' }
-                      }}
-                    >
+                    <Typography variant="body2" color="text.secondary">Check-In Time</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {formatTimestamp(selectedBooking.checkIn)}
                     </Typography>
                   </Box>
                   <Box sx={{ mb: 2 }}>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                    >
-                      Check-Out Time
-                    </Typography>
-                    <Typography 
-                      variant="body1" 
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: { xs: '0.9rem', sm: '1rem' }
-                      }}
-                    >
+                    <Typography variant="body2" color="text.secondary">Check-Out Time</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
                       {selectedBooking.checkOut ? formatTimestamp(selectedBooking.checkOut) : "Not Checked Out"}
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
-                    >
-                      Total Amount
-                    </Typography>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        color: theme.palette.success.main,
-                        fontSize: { xs: '1.1rem', sm: '1.25rem' }
-                      }}
-                    >
+                    <Typography variant="body2" color="text.secondary">Total Amount</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
                       ₹{selectedBooking.amount?.toLocaleString()}
                     </Typography>
                   </Box>
@@ -919,19 +525,8 @@ const AllBookingsPage = () => {
               
               {selectedBooking.idProof && (
                 <Grid item xs={12}>
-                  <Paper sx={{ 
-                    p: { xs: 2, sm: 3 }, 
-                    borderRadius: 2, 
-                    bgcolor: theme.palette.grey[50] 
-                  }}>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 600, 
-                        mb: 2,
-                        fontSize: { xs: '1rem', sm: '1.25rem' }
-                      }}
-                    >
+                  <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
                       ID Proof
                     </Typography>
                     <Box
@@ -940,7 +535,7 @@ const AllBookingsPage = () => {
                       alt="ID Proof"
                       sx={{
                         width: '100%',
-                        maxWidth: { xs: 300, sm: 400 },
+                        maxWidth: 400,
                         height: 'auto',
                         border: `1px solid ${theme.palette.divider}`,
                         borderRadius: 2,
@@ -952,34 +547,18 @@ const AllBookingsPage = () => {
             </Grid>
           )}
         </DialogContent>
-        <DialogActions sx={{ 
-          p: { xs: 2, sm: 3 }, 
-          pt: 1,
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: { xs: 1, sm: 0 }
-        }}>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
           <Button
             onClick={() => handleGenerateBill(selectedBooking)}
             variant="contained"
             startIcon={<DownloadIcon />}
-            sx={{ 
-              textTransform: 'none', 
-              borderRadius: 2, 
-              mr: { xs: 0, sm: 1 },
-              order: { xs: 1, sm: 1 }
-            }}
-            fullWidth={isMobile}
+            sx={{ textTransform: 'none', borderRadius: 2, mr: 1 }}
           >
             Download Bill
           </Button>
           <Button
             onClick={handleCloseDialog}
-            sx={{ 
-              textTransform: 'none', 
-              borderRadius: 2,
-              order: { xs: 2, sm: 2 }
-            }}
-            fullWidth={isMobile}
+            sx={{ textTransform: 'none', borderRadius: 2 }}
           >
             Close
           </Button>
