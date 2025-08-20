@@ -107,13 +107,15 @@ const SideNavbar = () => {
       </FloatingMenuButton>
 
       {/* Sidebar / Drawer */}
-      <StyledOffcanvas
-        show={show}
-        onHide={handleClose}
-        responsive="lg"
-        backdrop={true}
-        style={{ width: "260px" }}
-      >
+    <StyledOffcanvas
+  show={show}
+  onHide={handleClose}
+  responsive="lg"   // ✅ This keeps it docked on large screens
+  backdrop={true}
+  style={{ width: "260px" }}
+  className="border-end shadow-sm"
+>
+
         <Offcanvas.Header className="bg-primary text-white">
           <div className="d-flex flex-column align-items-center w-100">
             <div 
