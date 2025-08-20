@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../config/firebase";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
 import {
   collection,
   addDoc,
@@ -11,8 +12,21 @@ import {
   query,
   orderBy
 } from "firebase/firestore";
-import { Modal, Button, Form, Spinner } from "react-bootstrap";
+import { Modal, Button, Form } from "react-bootstrap";
 import { FaEdit, FaTrash, FaPlus, FaBed, FaSnowflake, FaWind, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import {
+  StyledContainer,
+  PageHeader,
+  StyledCard,
+  ActionButton,
+  FloatingActionButton,
+  ResponsiveGrid,
+  EmptyState,
+  LoadingSpinner,
+  StatusBadge,
+  FormCard,
+  ModalStyled
+} from "../components/StyledComponents";
 
 function RoomsPage() {
   const [rooms, setRooms] = useState([]);
@@ -108,35 +122,51 @@ function RoomsPage() {
 
   if (loading) {
     return (
-      <div className="container text-center my-5">
-        <Spinner animation="border" role="status" />
-        <p className="mt-2">Loading rooms...</p>
-      </div>
+      <StyledContainer fluid>
+        <LoadingSpinner>
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-3 text-muted">Loading rooms...</p>
+        </LoadingSpinner>
+      </StyledContainer>
     );
   }
 
   return (
-    <div className="container py-4">
+    <StyledContainer fluid>
+      <PageHeader>
+        <Container>
+          <Row className="align-items-center">
+            <Col lg={8}>
+              <h1 className="mb-2">
+                <FaBed className="me-3" />
+                Room Management
+              </h1>
+              <p className="mb-0">
+                Manage your hotel rooms and their availability
+              </p>
+            </Col>
+            <Col lg={4} className="mt-3 mt-lg-0 text-lg-end">
+              <ActionButton variant="light" onClick={() => setShowForm(true)}>
+                <FaPlus className="me-2" /> Add New Room
+              </ActionButton>
+            </Col>
+          </Row>
+        </Container>
+      </PageHeader>
+
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2>Room Management</h2>
-          <p className="text-muted">Manage your hotel rooms and their availability.</p>
-        </div>
-        <Button variant="primary" onClick={() => setShowForm(true)}>
-          <FaPlus className="me-2" /> Add New Room
-        </Button>
-      </div>
 
       {/* Add/Edit Form */}
       {showForm && (
-        <div className="card mb-4">
-          <div className="card-body">
+        <FormCard className="mb-4">
+          <div className="card-header">
             <h5>{editId ? "Edit Room" : "Add New Room"}</h5>
+          </div>
+          <div className="card-body">
             <Form onSubmit={handleSubmit}>
-              <div className="row g-3 align-items-end">
-                <div className="col-md-4">
-                  <Form.Group>
+              <Row className="g-3 align-items-end">
+                <Col md={4}>
+                  <Form.Group className="form-group">
                     <Form.Label>Room Number</Form.Label>
                     <Form.Control
                       type="text"
@@ -145,9 +175,9 @@ function RoomsPage() {
                       required
                     />
                   </Form.Group>
-                </div>
-                <div className="col-md-4">
-                  <Form.Group>
+                </Col>
+                <Col md={4}>
+                  <Form.Group className="form-group">
                     <Form.Label>Room Type</Form.Label>
                     <Form.Select
                       value={roomType}
@@ -157,89 +187,122 @@ function RoomsPage() {
                       <option value="Non-AC">Non-AC Room</option>
                     </Form.Select>
                   </Form.Group>
-                </div>
-                <div className="col-md-4 d-flex gap-2">
-                  <Button type="submit" variant="success">
+                </Col>
+                <Col md={4} className="d-flex gap-2">
+                  <ActionButton type="submit" variant="success">
                     {editId ? "Update" : "Add Room"}
-                  </Button>
-                  <Button variant="secondary" onClick={resetForm}>
+                  </ActionButton>
+                  <ActionButton variant="secondary" onClick={resetForm}>
                     Cancel
-                  </Button>
-                </div>
-              </div>
+                  </ActionButton>
+                </Col>
+              </Row>
             </Form>
           </div>
-        </div>
+        </FormCard>
       )}
 
       {/* Rooms Grid */}
-      <h5>All Rooms ({rooms.length})</h5>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h4 className="mb-0">All Rooms ({rooms.length})</h4>
+        <div className="d-none d-lg-block">
+          <small className="text-muted">
+            {rooms.filter(r => r.status === 'Available').length} Available • {' '}
+            {rooms.filter(r => r.status === 'Booked').length} Booked
+          </small>
+        </div>
+      </div>
+      
       {rooms.length > 0 ? (
-        <div className="row">
+        <ResponsiveGrid>
           {rooms.map((room) => (
-            <div className="col-md-3 mb-3" key={room.id}>
-              <div className="card h-100">
-                <div className="card-body d-flex flex-column">
-                  <div className="d-flex justify-content-between mb-2">
-                    <div className="text-primary"><FaBed /></div>
-                    {getStatusBadge(room.status)}
+            <StyledCard key={room.id} className="h-100">
+              <div className="card-body d-flex flex-column">
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <div className="text-primary fs-3">
+                    <FaBed />
                   </div>
-                  <h6>Room {room.roomNo}</h6>
-                  <div className="text-muted">{getRoomIcon(room.roomType)} {room.roomType}</div>
-                  <div className="mt-auto d-flex justify-content-end gap-2">
-                    <Button size="sm" variant="outline-primary" onClick={() => handleEdit(room)}>
-                      <FaEdit />
-                    </Button>
-                    <Button size="sm" variant="outline-danger" onClick={() => handleOpenDeleteModal(room.id)}>
-                      <FaTrash />
-                    </Button>
-                  </div>
+                  <StatusBadge className={`status-${room.status.toLowerCase()}`}>
+                    {room.status === 'Available' ? <FaCheckCircle /> : <FaTimesCircle />}
+                    {room.status}
+                  </StatusBadge>
+                </div>
+                
+                <h5 className="mb-2">Room {room.roomNo}</h5>
+                <div className="text-muted mb-3 d-flex align-items-center">
+                  {getRoomIcon(room.roomType)}
+                  <span className="ms-2">{room.roomType}</span>
+                </div>
+                
+                <div className="mt-auto d-flex justify-content-end gap-2">
+                  <ActionButton 
+                    size="sm" 
+                    variant="outline-primary" 
+                    onClick={() => handleEdit(room)}
+                  >
+                    <FaEdit />
+                  </ActionButton>
+                  <ActionButton 
+                    size="sm" 
+                    variant="outline-danger" 
+                    onClick={() => handleOpenDeleteModal(room.id)}
+                  >
+                    <FaTrash />
+                  </ActionButton>
                 </div>
               </div>
-            </div>
+            </StyledCard>
           ))}
-        </div>
+        </ResponsiveGrid>
       ) : (
-        <div className="text-center p-4 border rounded">
-          <FaBed size={40} className="text-muted mb-2" />
-          <h6>No rooms found</h6>
-          <p className="text-muted">Get started by adding your first room.</p>
-          <Button variant="primary" onClick={() => setShowForm(true)}>
+        <EmptyState>
+          <FaBed className="empty-icon" />
+          <h4>No rooms found</h4>
+          <p>Get started by adding your first room to the system.</p>
+          <ActionButton variant="primary" onClick={() => setShowForm(true)}>
             <FaPlus className="me-2" /> Add First Room
-          </Button>
-        </div>
+          </ActionButton>
+        </EmptyState>
       )}
 
       {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} onHide={handleCloseDeleteModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Deletion</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to permanently delete this room? This action cannot be undone.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleCloseDeleteModal}>
-            Cancel
-          </Button>
-          <Button variant="danger" onClick={confirmDelete}>
-            Delete
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <ModalStyled>
+        <Modal show={showDeleteModal} onHide={handleCloseDeleteModal} centered>
+          <Modal.Header closeButton>
+            <Modal.Title>Confirm Deletion</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div className="text-center py-3">
+              <FaTrash size={48} className="text-danger mb-3" />
+              <h5>Delete Room?</h5>
+              <p className="text-muted">
+                Are you sure you want to permanently delete this room? This action cannot be undone.
+              </p>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <ActionButton variant="secondary" onClick={handleCloseDeleteModal}>
+              Cancel
+            </ActionButton>
+            <ActionButton variant="danger" onClick={confirmDelete}>
+              <FaTrash className="me-2" />
+              Delete Room
+            </ActionButton>
+          </Modal.Footer>
+        </Modal>
+      </ModalStyled>
 
       {/* Mobile FAB */}
-      <Button
-        className="d-md-none rounded-circle position-fixed"
-        style={{ bottom: "20px", right: "20px", width: "56px", height: "56px" }}
+      <FloatingActionButton
+        variant="primary"
         onClick={() => {
           setShowForm(true);
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
       >
         <FaPlus />
-      </Button>
-    </div>
+      </FloatingActionButton>
+    </StyledContainer>
   );
 }
 

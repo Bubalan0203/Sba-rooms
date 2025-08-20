@@ -1,7 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../config/firebase";
 import { collection, onSnapshot, updateDoc, doc, runTransaction, serverTimestamp, Timestamp } from "firebase/firestore";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
 import { motion } from 'framer-motion';
+import {
+  StyledContainer,
+  PageHeader,
+  StyledCard,
+  ActionButton,
+  ResponsiveGrid,
+  LoadingSpinner,
+  StatusBadge,
+  ModalStyled,
+  EmptyState
+} from "../components/StyledComponents";
+import { 
+  FaClipboardCheck, 
+  FaUser, 
+  FaPhone, 
+  FaRupeeSign, 
+  FaClock, 
+  FaUsers,
+  FaSignOutAlt,
+  FaPlus,
+  FaExclamationTriangle
+} from "react-icons/fa";
 
 const BOOKING_START_HOUR = 12;
 
@@ -114,88 +137,188 @@ const ActiveBookingsPage = () => {
 
   if (loading) {
     return (
-      <div className="container text-center py-5">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <StyledContainer fluid>
+        <LoadingSpinner>
+          <Spinner animation="border" variant="primary" />
+          <p className="mt-3 text-muted">Loading active bookings...</p>
+        </LoadingSpinner>
+      </StyledContainer>
     );
   }
 
   return (
-    <div className="container py-4">
-      <h2 className="mb-4">Active Bookings</h2>
+    <StyledContainer fluid>
+      <PageHeader>
+        <Container>
+          <Row className="align-items-center">
+            <Col lg={8}>
+              <h1 className="mb-2">
+                <FaClipboardCheck className="me-3" />
+                Active Bookings
+              </h1>
+              <p className="mb-0">
+                Manage currently active guest bookings and check-outs
+              </p>
+            </Col>
+            <Col lg={4} className="mt-3 mt-lg-0 text-lg-end">
+              <div className="d-flex align-items-center justify-content-lg-end gap-3">
+                <div className="text-white">
+                  <small>Active: </small>
+                  <strong>{activeBookings.length}</strong>
+                </div>
+              </div>
+            </Col>
+          </Row>
+        </Container>
+      </PageHeader>
 
       {activeBookings.length > 0 ? (
-        <div className="row g-3">
+        <ResponsiveGrid>
           {activeBookings.map((booking, index) => {
             const cycleEndDate = getBookingCycleEnd(booking.checkIn);
             const isOverdue = cycleEndDate && new Date() > cycleEndDate;
 
             return (
-              <div className="col-md-4" key={booking.id}>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                >
-                  <div className={`card ${isOverdue ? 'border-danger' : 'border-success'}`}>
-                    <div className="card-body">
-                      <h5 className="card-title">Room {booking.roomNo}</h5>
-                      <p><strong>Guest:</strong> {booking.guestName}</p>
-                      <p><strong>Phone:</strong> {booking.customerPhone}</p>
-                      <p><strong>Amount:</strong> ₹{parseFloat(booking.amount).toLocaleString()}</p>
-                      <p><strong>Check-in:</strong> {formatDate(booking.checkIn?.toDate())}</p>
-                      {cycleEndDate && <p><strong>Cycle ends:</strong> {formatDate(cycleEndDate)}</p>}
-                      <p><strong>Guests:</strong> {booking.numberOfPersons || 1}</p>
+              <motion.div
+                key={booking.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                <StyledCard className={`h-100 ${isOverdue ? 'border-danger border-2' : 'border-success border-2'}`}>
+                  <div className="card-body">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                      <h5 className="card-title mb-0">
+                        Room {booking.roomNo}
+                      </h5>
+                      <StatusBadge className={isOverdue ? 'status-extended' : 'status-active'}>
+                        {isOverdue ? <FaExclamationTriangle /> : <FaClipboardCheck />}
+                        {isOverdue ? 'Overdue' : 'Active'}
+                      </StatusBadge>
                     </div>
-                    <div className="card-footer d-flex justify-content-end gap-2">
-                      {isOverdue ? (
-                        <>
-                          <button className="btn btn-outline-danger btn-sm" onClick={() => handleAlreadyCheckout(booking.id, booking.roomId, cycleEndDate)}>Already Left</button>
-                          <button className="btn btn-primary btn-sm" onClick={() => handleOpenExtendDialog(booking)}>Extend</button>
-                        </>
-                      ) : (
-                        <button className="btn btn-success btn-sm" onClick={() => handleCheckout(booking.id, booking.roomId)}>Checkout</button>
+                    
+                    <div className="mb-3">
+                      <div className="d-flex align-items-center mb-2">
+                        <FaUser className="text-muted me-2" />
+                        <strong>{booking.guestName}</strong>
+                      </div>
+                      <div className="d-flex align-items-center mb-2">
+                        <FaPhone className="text-muted me-2" />
+                        <span>{booking.customerPhone}</span>
+                      </div>
+                      <div className="d-flex align-items-center mb-2">
+                        <FaRupeeSign className="text-success me-2" />
+                        <strong className="text-success">₹{parseFloat(booking.amount).toLocaleString()}</strong>
+                      </div>
+                      <div className="d-flex align-items-center mb-2">
+                        <FaClock className="text-muted me-2" />
+                        <small>{formatDate(booking.checkIn?.toDate())}</small>
+                      </div>
+                      {cycleEndDate && (
+                        <div className="d-flex align-items-center mb-2">
+                          <FaClock className={`me-2 ${isOverdue ? 'text-danger' : 'text-warning'}`} />
+                          <small className={isOverdue ? 'text-danger fw-bold' : 'text-warning'}>
+                            Cycle ends: {formatDate(cycleEndDate)}
+                          </small>
+                        </div>
                       )}
+                      <div className="d-flex align-items-center">
+                        <FaUsers className="text-muted me-2" />
+                        <span>{booking.numberOfPersons || 1} guest{(booking.numberOfPersons || 1) > 1 ? 's' : ''}</span>
+                      </div>
                     </div>
                   </div>
-                </motion.div>
-              </div>
+                  
+                  <div className="card-footer bg-light d-flex justify-content-end gap-2">
+                    {isOverdue ? (
+                      <>
+                        <ActionButton 
+                          size="sm" 
+                          variant="outline-danger" 
+                          onClick={() => handleAlreadyCheckout(booking.id, booking.roomId, cycleEndDate)}
+                        >
+                          <FaSignOutAlt className="me-1" />
+                          Already Left
+                        </ActionButton>
+                        <ActionButton 
+                          size="sm" 
+                          variant="primary" 
+                          onClick={() => handleOpenExtendDialog(booking)}
+                        >
+                          <FaPlus className="me-1" />
+                          Extend
+                        </ActionButton>
+                      </>
+                    ) : (
+                      <ActionButton 
+                        size="sm" 
+                        variant="success" 
+                        onClick={() => handleCheckout(booking.id, booking.roomId)}
+                      >
+                        <FaSignOutAlt className="me-1" />
+                        Checkout
+                      </ActionButton>
+                    )}
+                  </div>
+                </StyledCard>
+              </motion.div>
             );
           })}
-        </div>
+        </ResponsiveGrid>
       ) : (
-        <div className="alert alert-info text-center">No Active Bookings</div>
+        <EmptyState>
+          <FaClipboardCheck className="empty-icon" />
+          <h4>No Active Bookings</h4>
+          <p>All rooms are currently available. New bookings will appear here.</p>
+        </EmptyState>
       )}
 
       {/* Extend Stay Modal */}
-      {extendDialog.open && (
-        <div className="modal show d-block" tabIndex="-1">
-          <div className="modal-dialog">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Extend Stay - Room {extendDialog.booking?.roomNo}</h5>
-                <button type="button" className="btn-close" onClick={handleCloseExtendDialog}></button>
-              </div>
-              <div className="modal-body">
-                <p>Enter the amount for {extendDialog.booking?.guestName}'s extended stay.</p>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={extendAmount}
-                  onChange={(e) => setExtendAmount(e.target.value)}
-                />
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={handleCloseExtendDialog}>Cancel</button>
-                <button className="btn btn-primary" onClick={handleExtendStay}>Extend Stay</button>
+      <ModalStyled>
+        {extendDialog.open && (
+          <div className="modal show d-block" tabIndex="-1">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    <FaPlus className="me-2" />
+                    Extend Stay - Room {extendDialog.booking?.roomNo}
+                  </h5>
+                  <button type="button" className="btn-close" onClick={handleCloseExtendDialog}></button>
+                </div>
+                <div className="modal-body">
+                  <div className="text-center mb-4">
+                    <FaUser size={48} className="text-primary mb-3" />
+                    <h6>{extendDialog.booking?.guestName}</h6>
+                    <p className="text-muted">Enter the amount for the extended stay period</p>
+                  </div>
+                  
+                  <div className="form-group">
+                    <label className="form-label fw-bold">Extension Amount (₹)</label>
+                    <input
+                      type="number"
+                      className="form-control form-control-lg"
+                      value={extendAmount}
+                      onChange={(e) => setExtendAmount(e.target.value)}
+                      placeholder="Enter amount"
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <ActionButton variant="secondary" onClick={handleCloseExtendDialog}>
+                    Cancel
+                  </ActionButton>
+                  <ActionButton variant="primary" onClick={handleExtendStay}>
+                    <FaPlus className="me-2" />
+                    Extend Stay
+                  </ActionButton>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </ModalStyled>
+    </StyledContainer>
   );
 };
 

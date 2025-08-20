@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { db } from "../config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
+import { Container, Row, Col, Spinner } from "react-bootstrap";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +15,16 @@ import {
 } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 import { format } from "date-fns";
+import {
+  StyledContainer,
+  PageHeader,
+  KPICard,
+  ChartContainer,
+  TableContainer,
+  StatsGrid,
+  LoadingSpinner
+} from "../components/StyledComponents";
+import { FaChartLine, FaHotel, FaRupeeSign, FaTrendingUp } from "react-icons/fa";
 
 ChartJS.register(
   CategoryScale,
@@ -26,16 +37,14 @@ ChartJS.register(
   Legend
 );
 
-const KPICard = ({ title, value, icon, trend }) => {
+const DashboardKPICard = ({ title, value, icon, trend, gradient }) => {
   return (
-    <div className="card text-center">
-      <div className="card-body">
-        <div className="mb-2">{icon}</div>
-        <h3>{value}</h3>
-        <p>{title}</p>
-        {trend && <span className="badge bg-success">{trend}</span>}
-      </div>
-    </div>
+    <KPICard gradient={gradient}>
+      <div className="kpi-icon">{icon}</div>
+      <h3>{value}</h3>
+      <div className="kpi-title">{title}</div>
+      {trend && <div className="kpi-trend">{trend}</div>}
+    </KPICard>
   );
 };
 
@@ -188,51 +197,213 @@ const DashboardPage = () => {
 
   if (loading) {
     return (
-      <div className="container text-center mt-5">
-        <div className="spinner-border text-primary" />
-      </div>
+      <StyledContainer fluid>
+        <LoadingSpinner>
+          <Spinner animation="border" variant="primary" />
+        </LoadingSpinner>
+      </StyledContainer>
     );
   }
 
   return (
-    <div className="container my-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <div>
-          <h2>Dashboard</h2>
-          <p>
-            Key performance metrics for {MONTHS[selectedMonth]} {selectedYear}
-          </p>
-        </div>
-        <div className="d-flex gap-2">
-          <select
-            className="form-select"
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(Number(e.target.value))}
-          >
-            {MONTHS.map((m, i) => (
-              <option key={i} value={i}>
-                {m}
-              </option>
-            ))}
-          </select>
-          <select
-            className="form-select"
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(Number(e.target.value))}
-          >
-            {YEARS.map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+    <StyledContainer fluid>
+      <PageHeader>
+        <Container>
+          <Row className="align-items-center">
+            <Col lg={8}>
+              <h1 className="mb-2">
+                <FaChartLine className="me-3" />
+                Dashboard
+              </h1>
+              <p className="mb-0">
+                Key performance metrics for {MONTHS[selectedMonth]} {selectedYear}
+              </p>
+            </Col>
+            <Col lg={4} className="mt-3 mt-lg-0">
+              <Row className="g-2">
+                <Col xs={6}>
+                  <select
+                    className="form-select"
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                  >
+                    {MONTHS.map((m, i) => (
+                      <option key={i} value={i}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </Col>
+                <Col xs={6}>
+                  <select
+                    className="form-select"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                  >
+                    {YEARS.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
+                  </select>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+        </Container>
+      </PageHeader>
 
       {/* KPI Cards */}
-      <div className="row mb-4">
-        <div className="col-md-4">
-          <KPICard
+      <StatsGrid>
+        <DashboardKPICard
+          title="Total Revenue"
+          value={`₹${totalRevenue.toLocaleString()}`}
+          icon={<FaRupeeSign />}
+          trend="+12%"
+          gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)"
+        />
+        <DashboardKPICard
+          title="Total Bookings"
+          value={totalBookings}
+          icon={<FaHotel />}
+          trend="+8%"
+          gradient="linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)"
+        />
+        <DashboardKPICard
+          title="Avg. Daily Rate"
+          value={`₹${averageDailyRate.toFixed(2)}`}
+          icon={<FaTrendingUp />}
+          trend="+15%"
+          gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+        />
+        <DashboardKPICard
+          title="Occupancy Rate"
+          value="85%"
+          icon={<FaChartLine />}
+          trend="+5%"
+          gradient="linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)"
+        />
+      </StatsGrid>
+
+      {/* Charts */}
+      <Row className="mb-4">
+        <Col lg={8} className="mb-4">
+          <ChartContainer>
+            <h5>Revenue Trend</h5>
+            <div style={{ height: '300px', position: 'relative' }}>
+              <Line 
+                data={lineChartData} 
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      grid: {
+                        color: '#f1f5f9'
+                      }
+                    },
+                    x: {
+                      grid: {
+                        display: false
+                      }
+                    }
+                  }
+                }}
+              />
+            </div>
+          </ChartContainer>
+        </Col>
+        <Col lg={4} className="mb-4">
+          <ChartContainer>
+            <h5>Bookings by Room</h5>
+            <div style={{ height: '300px', position: 'relative' }}>
+              <Bar 
+                data={barChartData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      grid: {
+                        color: '#f1f5f9'
+                      }
+                    },
+                    x: {
+                      grid: {
+                        display: false
+                      }
+                    }
+                  }
+                }}
+              />
+            </div>
+          </ChartContainer>
+        </Col>
+      </Row>
+
+      {/* Room Performance Table */}
+      <TableContainer>
+        <div className="p-4">
+          <h5 className="mb-4">Room Performance</h5>
+          <div className="table-responsive">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Room No.</th>
+                  <th>Bookings</th>
+                  <th>Revenue</th>
+                  <th>Avg. Daily Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {performanceByRoom.length > 0 ? (
+                  performanceByRoom.map((room) => (
+                    <tr key={room.roomNo}>
+                      <td>
+                        <strong>Room {room.roomNo}</strong>
+                      </td>
+                      <td>
+                        <span className="badge bg-primary">{room.totalBookings}</span>
+                      </td>
+                      <td>
+                        <strong className="text-success">₹{room.totalRevenue.toLocaleString()}</strong>
+                      </td>
+                      <td>₹{room.averageDailyRate.toFixed(2)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="text-center py-5 text-muted">
+                      <div>
+                        <FaChartLine size={48} className="mb-3 opacity-50" />
+                        <h6>No data for selected period</h6>
+                        <p>Try selecting a different month or year</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </TableContainer>
+    </StyledContainer>
+  );
+};
+
+export default DashboardPage;
             title="Total Revenue"
             value={`₹${totalRevenue.toLocaleString()}`}
             icon="💰"
