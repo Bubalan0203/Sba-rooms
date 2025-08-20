@@ -4,7 +4,7 @@ import RoomsPage from "./pages/RoomsPage";
 import BookingPage from "./pages/BookingPage";
 import AllBookingsPage from "./pages/AllBookingsPage";
 import ActiveBookingsPage from "./pages/ActiveBookingsPage";
-import DashboardPage from "./pages/DashboardPage";
+// import DashboardPage from "./pages/DashboardPage";
 import SideNavbar from "./pages/SideNavbar";
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
         <Router>
           <SideNavbar />
           <Routes>
-            <Route path="/" element={<DashboardPage />} />
+            {/* <Route path="/" element={<DashboardPage />} /> */}
             <Route path="/rooms" element={<RoomsPage />} />
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/active-bookings" element={<ActiveBookingsPage />} />

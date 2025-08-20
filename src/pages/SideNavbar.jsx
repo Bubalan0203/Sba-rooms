@@ -125,7 +125,7 @@ const SideNavbar = () => {
                 border: "2px solid rgba(255, 255, 255, 0.3)"
               }}
             >
-              <FaHotel size={32} className="text-white" />
+              <FaBed size={32} className="text-white" />
             </div>
             <h4 className="fw-bold mb-1 text-white">SBA Rooms</h4>
             <Badge bg="light" text="dark" className="px-3 py-1">
