@@ -20,44 +20,127 @@ import {
   FaTimes,
 } from "react-icons/fa";
 
-const StyledOffcanvas = styled(Offcanvas)`
-  .offcanvas-header {
-    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-    color: white;
-    padding: 2rem;
-    
-    .btn-close {
-      filter: invert(1);
-      opacity: 0.8;
-      
-      &:hover {
-        opacity: 1;
-      }
-    }
+const SidebarContainer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px;
+  background: white;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  
+  &.show {
+    transform: translateX(0);
   }
   
-  .offcanvas-body {
-    padding: 0;
-    background: #f8fafc;
+  @media (min-width: 992px) {
+    position: relative;
+    transform: translateX(0);
+    box-shadow: none;
+    border-right: 1px solid #e5e7eb;
+  }
+`;
+
+const SidebarHeader = styled.div`
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  
+  &:hover {
+    opacity: 1;
   }
   
-  .list-group-item {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 1rem 1.5rem;
-    transition: all 0.3s ease;
-    
-    &:hover {
-      background: rgba(37, 99, 235, 0.1);
-      transform: translateX(4px);
-    }
-    
-    &.active {
-      background: rgba(37, 99, 235, 0.15);
-      color: #2563eb;
-      font-weight: 600;
-    }
+  @media (min-width: 992px) {
+    display: none;
+  }
+`;
+
+const SidebarBody = styled.div`
+  padding: 0;
+  background: #f8fafc;
+  height: calc(100vh - 200px);
+  overflow-y: auto;
+  
+  @media (min-width: 992px) {
+    height: calc(100vh - 180px);
+  }
+`;
+
+const NavItem = styled(NavLink)`
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  color: #374151;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  font-weight: 500;
+  
+  &:hover {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    transform: translateX(4px);
+  }
+  
+  &.active {
+    background: rgba(37, 99, 235, 0.15);
+    color: #2563eb;
+    font-weight: 600;
+    border-left-color: #2563eb;
+  }
+  
+  .icon {
+    font-size: 1.3rem;
+    min-width: 20px;
+  }
+`;
+
+const SidebarFooter = styled.div`
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: white;
+  font-size: 0.875rem;
+  color: #6b7280;
+`;
+
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: ${props => props.show ? 1 : 0};
+  visibility: ${props => props.show ? 'visible' : 'hidden'};
+  transition: all 0.3s ease;
+  
+  @media (min-width: 992px) {
+    display: none;
   }
 `;
 
@@ -106,17 +189,15 @@ const SideNavbar = () => {
         <FaBars size={20} />
       </FloatingMenuButton>
 
-      {/* Sidebar / Drawer */}
-    <StyledOffcanvas
-  show={show}
-  onHide={handleClose}
-  responsive="lg"   // ✅ This keeps it docked on large screens
-  backdrop={true}
-  style={{ width: "260px" }}
-  className="border-end shadow-sm"
->
+      {/* Overlay for mobile */}
+      <Overlay show={show} onClick={handleClose} />
 
-        <Offcanvas.Header className="bg-primary text-white">
+      {/* Sidebar / Drawer */}
+      <SidebarContainer className={show ? 'show' : ''}>
+        <SidebarHeader>
+          <CloseButton onClick={handleClose}>
+            <FaTimes />
+          </CloseButton>
           <div className="d-flex flex-column align-items-center w-100">
             <div 
               className="rounded-circle d-flex align-items-center justify-content-center mb-3"
@@ -134,14 +215,11 @@ const SideNavbar = () => {
               Management System
             </Badge>
           </div>
-          <button className="btn-close d-lg-none" onClick={handleClose}>
-            <FaTimes size={20} />
-          </button>
-        </Offcanvas.Header>
+        </SidebarHeader>
 
-        <Offcanvas.Body className="d-flex flex-column p-0">
+        <SidebarBody>
           {/* Navigation */}
-          <ListGroup variant="flush" className="flex-grow-1">
+          <div className="flex-grow-1">
             {menuItems.map((item, index) => (
               <motion.div
                 key={item.path}
@@ -149,34 +227,28 @@ const SideNavbar = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
               >
-                <NavLink
+                <NavItem
                   to={item.path}
-                  className={({ isActive }) =>
-                    `list-group-item list-group-item-action d-flex align-items-center gap-3 text-decoration-none ${
-                      isActive ? "active fw-bold" : ""
-                    }`
-                  }
-                  style={({ isActive }) => ({
-                    borderLeft: isActive ? `4px solid ${item.color}` : "4px solid transparent"
-                  })}
                   onClick={handleClose}
                 >
-                  <span style={{ color: item.color, fontSize: "1.3rem" }}>
+                  <span className="icon" style={{ color: item.color }}>
                     {item.icon}
                   </span>
                   <span className="fw-medium">{item.text}</span>
-                </NavLink>
+                </NavItem>
               </motion.div>
             ))}
-          </ListGroup>
+          </div>
+        </SidebarBody>
 
-          {/* Footer */}
-          <div className="text-center py-3 border-top small text-muted">
+        {/* Footer */}
+        <SidebarFooter>
+          <div>
             <div className="fw-medium">© 2025 SBA Rooms</div>
             <div className="opacity-75 mt-1">Version 1.0.0</div>
           </div>
-        </Offcanvas.Body>
-      </StyledOffcanvas>
+        </SidebarFooter>
+      </SidebarContainer>
     </>
   );
 };

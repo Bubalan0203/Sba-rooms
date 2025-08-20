@@ -23,48 +23,48 @@ const media = {
 
 // Styled Components
 export const StyledContainer = styled(Container)`
-  padding: 1rem;
+  padding: 2rem;
+  background: #f1f5f9;
+  min-height: 100vh;
   
-  ${media.sm} {
-    padding: 1.5rem;
+  @media (max-width: 768px) {
+    padding: 1rem;
   }
+`;
+
+export const ResponsiveContainer = styled.div`
+  padding: 2rem;
+  background: #f1f5f9;
+  min-height: 100vh;
   
-  ${media.lg} {
-    padding: 2rem;
+  @media (max-width: 768px) {
+    padding: 1rem;
   }
 `;
 
 export const PageHeader = styled.div`
   background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
   color: white;
-  padding: 2rem 0;
-  margin: -1rem -1rem 2rem -1rem;
+  padding: 3rem 0;
+  margin: -2rem -2rem 2rem -2rem;
   border-radius: 0 0 24px 24px;
   
-  ${media.sm} {
-    margin: -1.5rem -1.5rem 2rem -1.5rem;
-    padding: 2.5rem 0;
-  }
-  
-  ${media.lg} {
-    margin: -2rem -2rem 2rem -2rem;
-    padding: 3rem 0;
+  @media (max-width: 768px) {
+    margin: -1rem -1rem 2rem -1rem;
+    padding: 2rem 0;
   }
   
   h1, h2 {
     color: white;
     margin-bottom: 0.5rem;
     font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3rem);
   }
   
   p {
     color: rgba(255, 255, 255, 0.9);
     margin-bottom: 0;
-    font-size: 1.1rem;
-    
-    ${media.sm} {
-      font-size: 1.2rem;
-    }
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
   }
 `;
 

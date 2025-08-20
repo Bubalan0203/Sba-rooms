@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import styled from "styled-components";
 
 import RoomsPage from "./pages/RoomsPage";
 import BookingPage from "./pages/BookingPage";
@@ -7,17 +8,40 @@ import ActiveBookingsPage from "./pages/ActiveBookingsPage";
 import DashboardPage from "./pages/DashboardPage";
 import SideNavbar from "./pages/SideNavbar";
 
+const AppContainer = styled.div`
+  display: flex;
+  min-height: 100vh;
+  background: #f1f5f9;
+`;
+
+const SidebarWrapper = styled.div`
+  width: 280px;
+  flex-shrink: 0;
+  
+  @media (max-width: 991px) {
+    width: 0;
+  }
+`;
+
+const MainContent = styled.div`
+  flex: 1;
+  min-width: 0;
+  background: #f1f5f9;
+  
+  @media (max-width: 991px) {
+    width: 100%;
+  }
+`;
+
 function App() {
   return (
     <Router>
-      <div style={{ display: "flex", minHeight: "100vh" }}>
-        {/* Sidebar on the left */}
-        <div style={{ width: "260px", flexShrink: 0 }}>
+      <AppContainer>
+        <SidebarWrapper>
           <SideNavbar />
-        </div>
+        </SidebarWrapper>
 
-        {/* Main Content on the right */}
-        <div style={{ flex: 1, padding: "1rem", background: "#f9fafb" }}>
+        <MainContent>
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/rooms" element={<RoomsPage />} />
@@ -25,8 +49,8 @@ function App() {
             <Route path="/active-bookings" element={<ActiveBookingsPage />} />
             <Route path="/all-bookings" element={<AllBookingsPage />} />
           </Routes>
-        </div>
-      </div>
+        </MainContent>
+      </AppContainer>
     </Router>
   );
 }
