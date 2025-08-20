@@ -162,31 +162,60 @@ function RoomsPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, md: 3 } }}>
+    <Container 
+      maxWidth="xl" 
+      sx={{ 
+        py: { xs: 2, sm: 3, md: 4 }, 
+        px: { xs: 1, sm: 2, md: 3 },
+        ml: { xs: 0, md: '280px' },
+        width: { xs: '100%', md: 'calc(100% - 280px)' },
+        maxWidth: { xs: '100%', md: 'none' },
+      }}
+    >
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'stretch', sm: 'flex-start', md: 'center' }, 
+          gap: { xs: 2, md: 3 }
+        }}>
           <Box>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: theme.palette.primary.main, mb: 1 }}>
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              sx={{ 
+                fontWeight: 700, 
+                color: theme.palette.primary.main, 
+                mb: 1,
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
+                textAlign: { xs: 'center', sm: 'left' }
+              }}
+            >
               Room Management
             </Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography 
+              variant="body1" 
+              color="text.secondary"
+              sx={{ textAlign: { xs: 'center', sm: 'left' } }}
+            >
               Manage your hotel rooms and their availability.
             </Typography>
           </Box>
-          {/* Hide the button on mobile screens, show the FAB instead */}
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => setShowForm(true)}
             sx={{
-              display: { xs: 'none', md: 'inline-flex' }, // Key change for responsiveness
+              display: { xs: 'none', md: 'inline-flex' },
               borderRadius: 3,
-              px: 3,
+              px: { md: 3, lg: 4 },
               py: 1.5,
               textTransform: 'none',
               fontWeight: 600,
               boxShadow: theme.shadows[4],
+              minWidth: { md: 160 }
             }}
           >
             Add New Room
@@ -206,18 +235,27 @@ function RoomsPage() {
             <Paper
               elevation={4}
               sx={{
-                p: { xs: 2, sm: 3, md: 4 }, // Responsive padding
+                p: { xs: 2, sm: 3, md: 4 },
                 mb: 4,
                 borderRadius: 3,
                 background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.primary.main}10 100%)`,
                 border: `1px solid ${theme.palette.divider}`,
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  fontWeight: 600, 
+                  mb: 3, 
+                  color: theme.palette.text.primary,
+                  fontSize: { xs: '1rem', sm: '1.25rem' },
+                  textAlign: { xs: 'center', sm: 'left' }
+                }}
+              >
                 {editId ? "Edit Room" : "Add New Room"}
               </Typography>
               <Box component="form" onSubmit={handleSubmit}>
-                <Grid container spacing={{xs: 2, md: 3}} alignItems="center">
+                <Grid container spacing={{ xs: 2, sm: 2, md: 3 }} alignItems="end">
                   <Grid item xs={12} md={4}>
                     <TextField
                       label="Room Number"
@@ -226,6 +264,7 @@ function RoomsPage() {
                       onChange={(e) => setRoomNo(e.target.value)}
                       required
                       fullWidth
+                      size={isMobile ? "medium" : "medium"}
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
@@ -235,6 +274,7 @@ function RoomsPage() {
                         value={roomType}
                         onChange={(e) => setRoomType(e.target.value)}
                         label="Room Type"
+                        size={isMobile ? "medium" : "medium"}
                       >
                         <MenuItem value="AC">AC Room</MenuItem>
                         <MenuItem value="Non-AC">Non-AC Room</MenuItem>
@@ -242,17 +282,22 @@ function RoomsPage() {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    {/* Responsive button group */}
-                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: { xs: 'column', sm: 'row' }, 
+                      gap: { xs: 1.5, sm: 2 },
+                      width: '100%'
+                    }}>
                       <Button
                         type="submit"
                         variant="contained"
-                        fullWidth={{ xs: true, sm: false }} // Full width on mobile
+                        fullWidth={isMobile}
                         sx={{
-                          px: 4,
+                          px: { xs: 2, sm: 3, md: 4 },
                           py: 1.5,
                           textTransform: 'none',
                           fontWeight: 600,
+                          minWidth: { sm: 120 }
                         }}
                       >
                         {editId ? "Update" : "Add Room"}
@@ -260,11 +305,12 @@ function RoomsPage() {
                       <Button
                         variant="outlined"
                         onClick={resetForm}
-                        fullWidth={{ xs: true, sm: false }} // Full width on mobile
+                        fullWidth={isMobile}
                         sx={{
-                          px: 3,
+                          px: { xs: 2, sm: 3 },
                           py: 1.5,
                           textTransform: 'none',
+                          minWidth: { sm: 100 }
                         }}
                       >
                         Cancel
@@ -280,14 +326,23 @@ function RoomsPage() {
 
       {/* Rooms Grid */}
       <Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: theme.palette.text.primary }}>
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 600, 
+            mb: 3, 
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+            textAlign: { xs: 'center', sm: 'left' }
+          }}
+        >
           All Rooms ({rooms.length})
         </Typography>
         
         {rooms.length > 0 ? (
-          <Grid container spacing={{ xs: 2, md: 3 }}>
+          <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
             {rooms.map((room, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={room.id}>
+              <Grid item xs={12} sm={6} md={4} xl={3} key={room.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -305,15 +360,27 @@ function RoomsPage() {
                       borderLeft: `5px solid ${getStatusColor(room.status)}`,
                       display: 'flex',
                       flexDirection: 'column',
+                      minHeight: { xs: 140, sm: 160 },
                       '&:hover': {
                         boxShadow: theme.shadows[8],
                         borderColor: getStatusColor(room.status),
                       },
                     }}
                   >
-                    <CardContent sx={{ p: 2, flexGrow: 1 }}>
+                    <CardContent sx={{ 
+                      p: { xs: 2, sm: 2.5 }, 
+                      flexGrow: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between'
+                    }}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                        <Avatar sx={{ bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                        <Avatar sx={{ 
+                          bgcolor: 'primary.main', 
+                          color: 'primary.contrastText',
+                          width: { xs: 36, sm: 40 },
+                          height: { xs: 36, sm: 40 }
+                        }}>
                           <HotelIcon />
                         </Avatar>
                         <Chip
@@ -324,17 +391,30 @@ function RoomsPage() {
                             bgcolor: `${getStatusColor(room.status)}20`,
                             color: getStatusColor(room.status),
                             fontWeight: 600,
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 }
                           }}
                         />
                       </Box>
                       
-                      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          mb: 1,
+                          fontSize: { xs: '1rem', sm: '1.125rem' }
+                        }}
+                      >
                         Room {room.roomNo}
                       </Typography>
                       
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         {getRoomIcon(room.roomType)}
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                        >
                           {room.roomType}
                         </Typography>
                       </Box>
@@ -342,11 +422,29 @@ function RoomsPage() {
                     
                     <Divider />
                     
-                    <CardActions sx={{ p: 1, justifyContent: 'flex-end' }}>
-                      <IconButton onClick={() => handleEdit(room)} aria-label="edit room" sx={{ color: 'primary.main' }}>
+                    <CardActions sx={{ 
+                      p: { xs: 1, sm: 1.5 }, 
+                      justifyContent: 'flex-end',
+                      gap: 0.5
+                    }}>
+                      <IconButton 
+                        onClick={() => handleEdit(room)} 
+                        aria-label="edit room" 
+                        sx={{ 
+                          color: 'primary.main',
+                          size: { xs: 'small', sm: 'medium' }
+                        }}
+                      >
                         <EditIcon />
                       </IconButton>
-                      <IconButton onClick={() => handleOpenDeleteDialog(room.id)} aria-label="delete room" sx={{ color: 'error.main' }}>
+                      <IconButton 
+                        onClick={() => handleOpenDeleteDialog(room.id)} 
+                        aria-label="delete room" 
+                        sx={{ 
+                          color: 'error.main',
+                          size: { xs: 'small', sm: 'medium' }
+                        }}
+                      >
                         <DeleteIcon />
                       </IconButton>
                     </CardActions>
@@ -358,24 +456,47 @@ function RoomsPage() {
         ) : (
           <Paper
             sx={{
-              p: { xs: 3, sm: 6 }, // Responsive padding
+              p: { xs: 3, sm: 4, md: 6 },
               textAlign: 'center',
               borderRadius: 3,
               bgcolor: 'grey.50',
               border: `2px dashed ${theme.palette.grey[300]}`,
             }}
           >
-            <HotelIcon sx={{ fontSize: { xs: 48, sm: 64 }, color: 'grey.400', mb: 2 }} />
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.secondary' }}>
+            <HotelIcon sx={{ 
+              fontSize: { xs: 40, sm: 48, md: 64 }, 
+              color: 'grey.400', 
+              mb: 2 
+            }} />
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                fontWeight: 600, 
+                mb: 1, 
+                color: 'text.secondary',
+                fontSize: { xs: '1rem', sm: '1.25rem' }
+              }}
+            >
               No rooms found
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            <Typography 
+              variant="body2" 
+              color="text.secondary" 
+              sx={{ 
+                mb: 3,
+                fontSize: { xs: '0.8rem', sm: '0.875rem' }
+              }}
+            >
               Get started by adding your first room.
             </Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => setShowForm(true)}
+              sx={{
+                px: { xs: 3, sm: 4 },
+                py: { xs: 1, sm: 1.5 }
+              }}
             >
               Add First Room
             </Button>
@@ -387,21 +508,51 @@ function RoomsPage() {
       <Dialog
         open={openDeleteDialog}
         onClose={handleCloseDeleteDialog}
-        PaperProps={{ sx: { borderRadius: 3, p: 1 } }}
+        PaperProps={{ 
+          sx: { 
+            borderRadius: 3, 
+            p: 1,
+            mx: { xs: 2, sm: 0 },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+          } 
+        }}
+        fullWidth
+        maxWidth="sm"
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>
+        <DialogTitle sx={{ 
+          fontWeight: 600,
+          fontSize: { xs: '1.1rem', sm: '1.25rem' },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
           Confirm Deletion
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText sx={{ 
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            textAlign: { xs: 'center', sm: 'left' }
+          }}>
             Are you sure you want to permanently delete this room? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseDeleteDialog}>
+        <DialogActions sx={{ 
+          p: { xs: 2, sm: 3 },
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 }
+        }}>
+          <Button 
+            onClick={handleCloseDeleteDialog}
+            fullWidth={isMobile}
+            sx={{ order: { xs: 2, sm: 1 } }}
+          >
             Cancel
           </Button>
-          <Button onClick={confirmDelete} variant="contained" color="error">
+          <Button 
+            onClick={confirmDelete} 
+            variant="contained" 
+            color="error"
+            fullWidth={isMobile}
+            sx={{ order: { xs: 1, sm: 2 } }}
+          >
             Delete
           </Button>
         </DialogActions>
@@ -418,9 +569,11 @@ function RoomsPage() {
           }}
           sx={{
             position: 'fixed',
-            bottom: 24,
-            right: 24,
+            bottom: { xs: 20, sm: 24 },
+            right: { xs: 20, sm: 24 },
             zIndex: 1000,
+            width: { xs: 52, sm: 56 },
+            height: { xs: 52, sm: 56 }
           }}
         >
           <AddIcon />

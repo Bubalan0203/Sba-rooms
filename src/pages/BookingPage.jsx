@@ -234,15 +234,43 @@ function BookingPage() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1, md: 3 } }}>
+    <Container 
+      maxWidth="xl" 
+      sx={{ 
+        py: { xs: 2, sm: 3, md: 4 }, 
+        px: { xs: 1, sm: 2, md: 3 },
+        ml: { xs: 0, md: '280px' },
+        width: { xs: '100%', md: 'calc(100% - 280px)' },
+        maxWidth: { xs: '100%', md: 'none' },
+      }}
+    >
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'stretch', sm: 'flex-start', md: 'center' }, 
+          gap: { xs: 2, md: 3 }
+        }}>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.primary.main, mb: 1 }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                fontWeight: 700, 
+                color: theme.palette.primary.main, 
+                mb: 1,
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' },
+                textAlign: { xs: 'center', sm: 'left' }
+              }}
+            >
               Booking Management
             </Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography 
+              variant="body1" 
+              color="text.secondary"
+              sx={{ textAlign: { xs: 'center', sm: 'left' } }}
+            >
               Create new bookings and manage guest reservations
             </Typography>
           </Box>
@@ -252,11 +280,13 @@ function BookingPage() {
             onClick={handleOpenModal}
             sx={{
               borderRadius: 3,
-              px: 4,
+              px: { xs: 3, md: 4 },
               py: 1.5,
               textTransform: 'none',
               fontWeight: 600,
               boxShadow: theme.shadows[4],
+              alignSelf: { xs: 'center', md: 'flex-start' },
+              minWidth: { xs: 200, md: 'auto' }
             }}
           >
             New Booking
@@ -267,18 +297,39 @@ function BookingPage() {
       {/* Welcome Card */}
       <Paper
         sx={{
-          p: 4,
+          p: { xs: 3, sm: 4, md: 5 },
           borderRadius: 3,
           background: `linear-gradient(135deg, ${theme.palette.primary.main}15 0%, ${theme.palette.secondary.main}15 100%)`,
           border: `1px solid ${theme.palette.primary.main}30`,
           textAlign: 'center',
         }}
       >
-        <HotelIcon sx={{ fontSize: 64, color: theme.palette.primary.main, mb: 2 }} />
-        <Typography variant="h5" sx={{ fontWeight: 600, mb: 2, color: theme.palette.text.primary }}>
+        <HotelIcon sx={{ 
+          fontSize: { xs: 48, sm: 56, md: 64 }, 
+          color: theme.palette.primary.main, 
+          mb: 2 
+        }} />
+        <Typography 
+          variant="h5" 
+          sx={{ 
+            fontWeight: 600, 
+            mb: 2, 
+            color: theme.palette.text.primary,
+            fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' }
+          }}
+        >
           Ready to Create a New Booking?
         </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography 
+          variant="body1" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 3,
+            fontSize: { xs: '0.9rem', sm: '1rem' },
+            maxWidth: { xs: '100%', sm: '80%', md: '60%' },
+            mx: 'auto'
+          }}
+        >
           Click the "New Booking" button above to start the booking process for your guests.
         </Typography>
         <Button
@@ -286,7 +337,8 @@ function BookingPage() {
           onClick={handleOpenModal}
           sx={{
             borderRadius: 2,
-            px: 3,
+            px: { xs: 3, sm: 4 },
+            py: { xs: 1, sm: 1.5 },
             textTransform: 'none',
             fontWeight: 600,
           }}
@@ -299,8 +351,19 @@ function BookingPage() {
       <Modal open={modalOpen} onClose={handleCloseModal}>
         <Box sx={modalStyle}>
           {/* Modal Header */}
-          <Box sx={{ p: 3, borderBottom: `1px solid ${theme.palette.divider}` }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+          <Box sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            borderBottom: `1px solid ${theme.palette.divider}` 
+          }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: 600, 
+                color: theme.palette.text.primary,
+                fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                textAlign: { xs: 'center', sm: 'left' }
+              }}
+            >
               Create New Booking
             </Typography>
             <Box sx={{ mt: 2 }}>
@@ -311,18 +374,22 @@ function BookingPage() {
                       StepIconComponent={({ active, completed }) => (
                         <Avatar
                           sx={{
-                            width: 32,
-                            height: 32,
+                            width: { xs: 28, sm: 32 },
+                            height: { xs: 28, sm: 32 },
                             bgcolor: completed ? theme.palette.success.main : active ? theme.palette.primary.main : theme.palette.grey[300],
                             color: 'white',
-                            fontSize: '0.875rem',
+                            fontSize: { xs: '0.75rem', sm: '0.875rem' },
                           }}
                         >
-                          {completed ? <CheckIcon sx={{ fontSize: '1rem' }} /> : index + 1}
+                          {completed ? <CheckIcon sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }} /> : index + 1}
                         </Avatar>
                       )}
                     >
-                      {!isMobile && label}
+                      {!isMobile && (
+                        <Typography sx={{ fontSize: { sm: '0.875rem', md: '1rem' } }}>
+                          {label}
+                        </Typography>
+                      )}
                     </StepLabel>
                   </Step>
                 ))}
@@ -331,7 +398,7 @@ function BookingPage() {
           </Box>
 
           {/* Modal Content */}
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: { xs: 2, sm: 3 } }}>
             <AnimatePresence mode="wait">
               {/* Step 1: Room Selection */}
               {step === 0 && (
@@ -342,12 +409,23 @@ function BookingPage() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 600, 
+                      mb: 3, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1,
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                      justifyContent: { xs: 'center', sm: 'flex-start' }
+                    }}
+                  >
                     <HotelIcon color="primary" />
                     Select Rooms
                   </Typography>
                   
-                  <FormControl fullWidth sx={{ mb: 3 }}>
+                  <FormControl fullWidth sx={{ mb: 3 }} size={isMobile ? "medium" : "medium"}>
                     <InputLabel>Number of Rooms</InputLabel>
                     <Select
                       value={numRooms}
@@ -360,38 +438,59 @@ function BookingPage() {
                     </Select>
                   </FormControl>
 
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                  <Typography 
+                    variant="subtitle1" 
+                    sx={{ 
+                      fontWeight: 600, 
+                      mb: 2,
+                      fontSize: { xs: '0.9rem', sm: '1rem' },
+                      textAlign: { xs: 'center', sm: 'left' }
+                    }}
+                  >
                     Available Rooms ({selectedRooms.length} / {numRooms} selected)
                   </Typography>
 
-                  <Paper variant="outlined" sx={{ p: 2, maxHeight: 300, overflowY: 'auto', borderRadius: 2 }}>
+                  <Paper variant="outlined" sx={{ 
+                    p: { xs: 1.5, sm: 2 }, 
+                    maxHeight: { xs: 250, sm: 300 }, 
+                    overflowY: 'auto', 
+                    borderRadius: 2 
+                  }}>
                     {rooms.length > 0 ? (
-                      <Grid container spacing={2}>
+                      <Grid container spacing={{ xs: 1.5, sm: 2 }}>
                         {rooms.map(room => (
-                          <Grid item xs={12} sm={6} key={room.id}>
+                          <Grid item xs={12} sm={6} md={4} key={room.id}>
                             <Card
                               sx={{
                                 cursor: 'pointer',
                                 border: selectedRooms.includes(room.id) ? `2px solid ${theme.palette.primary.main}` : `1px solid ${theme.palette.divider}`,
                                 bgcolor: selectedRooms.includes(room.id) ? `${theme.palette.primary.main}10` : 'background.paper',
                                 transition: 'all 0.2s ease',
+                                minHeight: { xs: 60, sm: 80 },
                                 '&:hover': {
                                   borderColor: theme.palette.primary.main,
                                 },
                               }}
                               onClick={() => handleRoomSelect(room.id)}
                             >
-                              <CardContent sx={{ p: 2 }}>
+                              <CardContent sx={{ p: { xs: 1.5, sm: 2 } }}>
                                 <FormControlLabel
                                   control={
                                     <Checkbox
                                       checked={selectedRooms.includes(room.id)}
                                       disabled={!selectedRooms.includes(room.id) && selectedRooms.length >= numRooms}
+                                      size={isMobile ? "small" : "medium"}
                                     />
                                   }
                                   label={
                                     <Box>
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                      <Typography 
+                                        variant="subtitle2" 
+                                        sx={{ 
+                                          fontWeight: 600,
+                                          fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                                        }}
+                                      >
                                         Room {room.roomNo}
                                       </Typography>
                                       <Chip
@@ -400,6 +499,8 @@ function BookingPage() {
                                         sx={{
                                           bgcolor: theme.palette.secondary.light + '30',
                                           color: theme.palette.secondary.main,
+                                          fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                                          height: { xs: 20, sm: 24 }
                                         }}
                                       />
                                     </Box>
@@ -411,7 +512,15 @@ function BookingPage() {
                         ))}
                       </Grid>
                     ) : (
-                      <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                          textAlign: 'center', 
+                          py: { xs: 3, sm: 4 },
+                          fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                        }}
+                      >
                         No available rooms found
                       </Typography>
                     )}
@@ -428,15 +537,38 @@ function BookingPage() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 600, 
+                      mb: 3, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1,
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                      justifyContent: { xs: 'center', sm: 'flex-start' }
+                    }}
+                  >
                     <PersonIcon color="primary" />
                     Guest & Payment Details
                   </Typography>
                   
-                  <Grid container spacing={3}>
+                  <Grid container spacing={{ xs: 2, sm: 3 }}>
                     <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                      <Paper sx={{ 
+                        p: { xs: 2, sm: 3 }, 
+                        borderRadius: 2, 
+                        bgcolor: theme.palette.grey[50] 
+                      }}>
+                        <Typography 
+                          variant="subtitle1" 
+                          sx={{ 
+                            fontWeight: 600, 
+                            mb: 2,
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
+                            textAlign: { xs: 'center', sm: 'left' }
+                          }}
+                        >
                           Guest Information
                         </Typography>
                         <TextField
@@ -446,6 +578,7 @@ function BookingPage() {
                           value={guestName}
                           onChange={e => setGuestName(e.target.value)}
                           sx={{ mb: 2 }}
+                          size={isMobile ? "medium" : "medium"}
                         />
                         <TextField
                           label="Phone Number"
@@ -455,19 +588,29 @@ function BookingPage() {
                           value={guestPhone}
                           onChange={e => setGuestPhone(e.target.value)}
                           sx={{ mb: 2 }}
+                          size={isMobile ? "medium" : "medium"}
                         />
                         <Button
                           variant="outlined"
                           component="label"
                           fullWidth
                           startIcon={<UploadIcon />}
-                          sx={{ textTransform: 'none' }}
+                          sx={{ 
+                            textTransform: 'none',
+                            py: { xs: 1.5, sm: 1.5 }
+                          }}
                         >
                           Upload ID Proof
                           <input type="file" accept="image/*" hidden onChange={handleFileChange} required />
                         </Button>
                         {idProofBase64 && (
-                          <Alert severity="success" sx={{ mt: 1 }}>
+                          <Alert 
+                            severity="success" 
+                            sx={{ 
+                              mt: 1,
+                              fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                            }}
+                          >
                             ID Proof uploaded successfully
                           </Alert>
                         )}
@@ -475,8 +618,20 @@ function BookingPage() {
                     </Grid>
                     
                     <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 3, borderRadius: 2, bgcolor: theme.palette.grey[50] }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                      <Paper sx={{ 
+                        p: { xs: 2, sm: 3 }, 
+                        borderRadius: 2, 
+                        bgcolor: theme.palette.grey[50] 
+                      }}>
+                        <Typography 
+                          variant="subtitle1" 
+                          sx={{ 
+                            fontWeight: 600, 
+                            mb: 2,
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
+                            textAlign: { xs: 'center', sm: 'left' }
+                          }}
+                        >
                           Room Details & Charges
                         </Typography>
                         <TextField
@@ -487,17 +642,30 @@ function BookingPage() {
                           value={commonAmount}
                           onChange={handleCommonAmountChange}
                           sx={{ mb: 2 }}
+                          size={isMobile ? "medium" : "medium"}
                         />
                         <Divider sx={{ mb: 2 }} />
-                        <Box sx={{ maxHeight: 200, overflowY: 'auto' }}>
+                        <Box sx={{ maxHeight: { xs: 150, sm: 200 }, overflowY: 'auto' }}>
                           {selectedRooms.map(roomId => {
                             const room = rooms.find(r => r.id === roomId);
                             return (
-                              <Box key={roomId} sx={{ mb: 2, p: 2, border: `1px solid ${theme.palette.divider}`, borderRadius: 1 }}>
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                              <Box key={roomId} sx={{ 
+                                mb: 2, 
+                                p: { xs: 1.5, sm: 2 }, 
+                                border: `1px solid ${theme.palette.divider}`, 
+                                borderRadius: 1 
+                              }}>
+                                <Typography 
+                                  variant="subtitle2" 
+                                  sx={{ 
+                                    fontWeight: 600, 
+                                    mb: 1,
+                                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                                  }}
+                                >
                                   Room {room.roomNo}
                                 </Typography>
-                                <Grid container spacing={2}>
+                                <Grid container spacing={{ xs: 1, sm: 2 }}>
                                   <Grid item xs={6}>
                                     <TextField
                                       label="Persons"
@@ -539,26 +707,64 @@ function BookingPage() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography 
+                    variant="h6" 
+                    sx={{ 
+                      fontWeight: 600, 
+                      mb: 3, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1,
+                      fontSize: { xs: '1rem', sm: '1.25rem' },
+                      justifyContent: { xs: 'center', sm: 'flex-start' }
+                    }}
+                  >
                     <CheckIcon color="primary" />
                     Review & Confirm Booking
                   </Typography>
                   
-                  <Grid container spacing={3}>
+                  <Grid container spacing={{ xs: 2, sm: 3 }}>
                     <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                      <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+                        <Typography 
+                          variant="subtitle1" 
+                          sx={{ 
+                            fontWeight: 600, 
+                            mb: 2,
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
+                            textAlign: { xs: 'center', sm: 'left' }
+                          }}
+                        >
                           Guest Details
                         </Typography>
-                        <Typography variant="body2" sx={{ mb: 1 }}>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            mb: 1,
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                          }}
+                        >
                           <strong>Name:</strong> {guestName}
                         </Typography>
-                        <Typography variant="body2" sx={{ mb: 2 }}>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            mb: 2,
+                            fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                          }}
+                        >
                           <strong>Phone:</strong> {guestPhone}
                         </Typography>
                         {idProofBase64 && (
                           <Box>
-                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                fontWeight: 600, 
+                                mb: 1,
+                                fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                              }}
+                            >
                               ID Proof:
                             </Typography>
                             <Box
@@ -567,7 +773,7 @@ function BookingPage() {
                               alt="ID Proof Preview"
                               sx={{
                                 width: '100%',
-                                maxWidth: 200,
+                                maxWidth: { xs: 150, sm: 200 },
                                 height: 'auto',
                                 border: `1px solid ${theme.palette.divider}`,
                                 borderRadius: 1,
@@ -579,8 +785,16 @@ function BookingPage() {
                     </Grid>
                     
                     <Grid item xs={12} md={6}>
-                      <Paper sx={{ p: 3, borderRadius: 2 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                      <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2 }}>
+                        <Typography 
+                          variant="subtitle1" 
+                          sx={{ 
+                            fontWeight: 600, 
+                            mb: 2,
+                            fontSize: { xs: '0.9rem', sm: '1rem' },
+                            textAlign: { xs: 'center', sm: 'left' }
+                          }}
+                        >
                           Booking Summary
                         </Typography>
                         <List dense>
@@ -588,23 +802,52 @@ function BookingPage() {
                             const room = rooms.find(r => r.id === roomId);
                             const finalAmount = parseFloat(roomDetails[roomId]?.amount || commonAmount || 0);
                             return (
-                              <ListItem key={roomId} sx={{ px: 0 }}>
+                              <ListItem key={roomId} sx={{ px: 0, py: { xs: 0.5, sm: 1 } }}>
                                 <ListItemText
                                   primary={`Room ${room.roomNo}`}
                                   secondary={`${roomDetails[roomId]?.numberOfPersons || 1} Person(s)`}
+                                  primaryTypographyProps={{
+                                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                                  }}
+                                  secondaryTypographyProps={{
+                                    fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                                  }}
                                 />
-                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                <Typography 
+                                  variant="body1" 
+                                  sx={{ 
+                                    fontWeight: 600,
+                                    fontSize: { xs: '0.8rem', sm: '0.875rem' }
+                                  }}
+                                >
                                   ₹{finalAmount.toFixed(2)}
                                 </Typography>
                               </ListItem>
                             );
                           })}
                           <Divider sx={{ my: 1 }} />
-                          <ListItem sx={{ px: 0 }}>
+                          <ListItem sx={{ px: 0, py: { xs: 1, sm: 1.5 } }}>
                             <ListItemText
-                              primary={<Typography variant="h6" sx={{ fontWeight: 700 }}>Total Amount</Typography>}
+                              primary={
+                                <Typography 
+                                  variant="h6" 
+                                  sx={{ 
+                                    fontWeight: 700,
+                                    fontSize: { xs: '1rem', sm: '1.25rem' }
+                                  }}
+                                >
+                                  Total Amount
+                                </Typography>
+                              }
                             />
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                            <Typography 
+                              variant="h6" 
+                              sx={{ 
+                                fontWeight: 700, 
+                                color: theme.palette.primary.main,
+                                fontSize: { xs: '1rem', sm: '1.25rem' }
+                              }}
+                            >
                               ₹{totalAmount.toFixed(2)}
                             </Typography>
                           </ListItem>
@@ -618,10 +861,22 @@ function BookingPage() {
           </Box>
 
           {/* Modal Footer */}
-          <Box sx={{ p: 3, borderTop: `1px solid ${theme.palette.divider}`, display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ 
+            p: { xs: 2, sm: 3 }, 
+            borderTop: `1px solid ${theme.palette.divider}`, 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            gap: { xs: 2, sm: 0 }
+          }}>
             <Button
               onClick={step === 0 ? handleCloseModal : handleBack}
-              sx={{ textTransform: 'none', borderRadius: 2 }}
+              sx={{ 
+                textTransform: 'none', 
+                borderRadius: 2,
+                order: { xs: 2, sm: 1 },
+                px: { xs: 4, sm: 3 }
+              }}
             >
               {step === 0 ? 'Cancel' : 'Back'}
             </Button>
@@ -630,7 +885,12 @@ function BookingPage() {
               <Button
                 variant="contained"
                 onClick={handleNext}
-                sx={{ textTransform: 'none', borderRadius: 2, px: 4 }}
+                sx={{ 
+                  textTransform: 'none', 
+                  borderRadius: 2, 
+                  px: { xs: 4, sm: 4 },
+                  order: { xs: 1, sm: 2 }
+                }}
               >
                 Next
               </Button>
@@ -639,9 +899,14 @@ function BookingPage() {
                 variant="contained"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                sx={{ textTransform: 'none', borderRadius: 2, px: 4 }}
+                sx={{ 
+                  textTransform: 'none', 
+                  borderRadius: 2, 
+                  px: { xs: 4, sm: 4 },
+                  order: { xs: 1, sm: 2 }
+                }}
               >
-                {isSubmitting ? <CircularProgress size={24} /> : 'Confirm Booking'}
+                {isSubmitting ? <CircularProgress size={20} /> : 'Confirm Booking'}
               </Button>
             )}
           </Box>

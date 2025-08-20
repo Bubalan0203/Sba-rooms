@@ -159,65 +159,137 @@ const ActiveBookingsPage = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, px: { xs: 1, md: 3 } }}>
+    <Container 
+      maxWidth="xl" 
+      sx={{ 
+        py: { xs: 2, sm: 3, md: 4 }, 
+        px: { xs: 1, sm: 2, md: 3 },
+        ml: { xs: 0, md: '280px' },
+        width: { xs: '100%', md: 'calc(100% - 280px)' },
+        maxWidth: { xs: '100%', md: 'none' },
+      }}
+    >
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-          <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 48, height: 48 }}>
+          <Avatar sx={{ 
+            bgcolor: theme.palette.primary.main, 
+            width: { xs: 40, sm: 48 }, 
+            height: { xs: 40, sm: 48 } 
+          }}>
             <ActiveIcon />
           </Avatar>
           <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+            <Typography 
+              variant="h4" 
+              sx={{ 
+                fontWeight: 700, 
+                color: theme.palette.text.primary,
+                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.125rem' }
+              }}
+            >
               Active Bookings
             </Typography>
-            <Typography variant="body1" color="text.secondary">
+            <Typography 
+              variant="body1" 
+              color="text.secondary"
+              sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+            >
               Manage current guest stays and check-outs
             </Typography>
           </Box>
         </Box>
         
         {/* Stats */}
-        <Paper sx={{ p: 2, borderRadius: 2, bgcolor: theme.palette.primary.light + '20' }}>
-          <Grid container spacing={2}>
+        <Paper sx={{ 
+          p: { xs: 2, sm: 2.5 }, 
+          borderRadius: 2, 
+          bgcolor: theme.palette.primary.light + '20' 
+        }}>
+          <Grid container spacing={{ xs: 1, sm: 2 }}>
             <Grid item xs={6} sm={3}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    color: theme.palette.primary.main,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}
+                >
                   {activeBookings.length}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Active Bookings
                 </Typography>
               </Box>
             </Grid>
             <Grid item xs={6} sm={3}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.warning.main }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    color: theme.palette.warning.main,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}
+                >
                   {activeBookings.filter(b => {
                     const cycleEnd = getBookingCycleEnd(b.checkIn);
                     return cycleEnd && new Date() > cycleEnd;
                   }).length}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Overdue
                 </Typography>
               </Box>
             </Grid>
             <Grid item xs={6} sm={3}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.success.main }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    color: theme.palette.success.main,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}
+                >
                   ₹{activeBookings.reduce((sum, b) => sum + (b.amount || 0), 0).toLocaleString()}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Total Revenue
                 </Typography>
               </Box>
             </Grid>
             <Grid item xs={6} sm={3}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.info.main }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    color: theme.palette.info.main,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem' }
+                  }}
+                >
                   {Math.round(activeBookings.reduce((sum, b) => sum + (b.numberOfPersons || 1), 0) / Math.max(activeBookings.length, 1))}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography 
+                  variant="caption" 
+                  color="text.secondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
                   Avg. Guests
                 </Typography>
               </Box>
@@ -228,13 +300,13 @@ const ActiveBookingsPage = () => {
 
       {/* Bookings Grid */}
       {activeBookings.length > 0 ? (
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 2, md: 3 }}>
           {activeBookings.map((booking, index) => {
             const cycleEndDate = getBookingCycleEnd(booking.checkIn);
             const isOverdue = cycleEndDate && new Date() > cycleEndDate;
 
             return (
-              <Grid item xs={12} sm={6} lg={4} key={booking.id}>
+              <Grid item xs={12} sm={6} lg={4} xl={3} key={booking.id}>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -248,20 +320,38 @@ const ActiveBookingsPage = () => {
                       boxShadow: theme.shadows[2],
                       border: isOverdue ? `2px solid ${theme.palette.error.main}` : `2px solid ${theme.palette.success.main}30`,
                       transition: 'all 0.3s ease',
+                      minHeight: { xs: 280, sm: 320 },
+                      display: 'flex',
+                      flexDirection: 'column',
                       '&:hover': {
                         boxShadow: theme.shadows[8],
                         borderColor: isOverdue ? theme.palette.error.main : theme.palette.success.main,
                       },
                     }}
                   >
-                    <CardContent sx={{ p: 3 }}>
+                    <CardContent sx={{ 
+                      p: { xs: 2, sm: 3 },
+                      flexGrow: 1,
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}>
                       {/* Header */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ bgcolor: theme.palette.primary.main, width: 40, height: 40 }}>
+                          <Avatar sx={{ 
+                            bgcolor: theme.palette.primary.main, 
+                            width: { xs: 36, sm: 40 }, 
+                            height: { xs: 36, sm: 40 } 
+                          }}>
                             <HotelIcon />
                           </Avatar>
-                          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                          <Typography 
+                            variant="h6" 
+                            sx={{ 
+                              fontWeight: 700,
+                              fontSize: { xs: '1rem', sm: '1.125rem' }
+                            }}
+                          >
                             Room {booking.roomNo}
                           </Typography>
                         </Box>
@@ -273,6 +363,8 @@ const ActiveBookingsPage = () => {
                             bgcolor: isOverdue ? `${theme.palette.error.main}20` : `${theme.palette.success.main}20`,
                             color: isOverdue ? theme.palette.error.main : theme.palette.success.main,
                             fontWeight: 600,
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            height: { xs: 24, sm: 28 }
                           }}
                         />
                       </Box>
@@ -280,20 +372,46 @@ const ActiveBookingsPage = () => {
                       {/* Guest Info */}
                       <Box sx={{ mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <PersonIcon sx={{ color: theme.palette.text.secondary, fontSize: '1.2rem' }} />
-                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                          <PersonIcon sx={{ 
+                            color: theme.palette.text.secondary, 
+                            fontSize: { xs: '1.1rem', sm: '1.2rem' } 
+                          }} />
+                          <Typography 
+                            variant="body1" 
+                            sx={{ 
+                              fontWeight: 600,
+                              fontSize: { xs: '0.9rem', sm: '1rem' }
+                            }}
+                          >
                             {booking.guestName}
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <PhoneIcon sx={{ color: theme.palette.text.secondary, fontSize: '1.2rem' }} />
-                          <Typography variant="body2" color="text.secondary">
+                          <PhoneIcon sx={{ 
+                            color: theme.palette.text.secondary, 
+                            fontSize: { xs: '1.1rem', sm: '1.2rem' } 
+                          }} />
+                          <Typography 
+                            variant="body2" 
+                            color="text.secondary"
+                            sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}
+                          >
                             {booking.customerPhone}
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <MoneyIcon sx={{ color: theme.palette.success.main, fontSize: '1.2rem' }} />
-                          <Typography variant="body1" sx={{ fontWeight: 600, color: theme.palette.success.main }}>
+                          <MoneyIcon sx={{ 
+                            color: theme.palette.success.main, 
+                            fontSize: { xs: '1.1rem', sm: '1.2rem' } 
+                          }} />
+                          <Typography 
+                            variant="body1" 
+                            sx={{ 
+                              fontWeight: 600, 
+                              color: theme.palette.success.main,
+                              fontSize: { xs: '0.9rem', sm: '1rem' }
+                            }}
+                          >
                             ₹{parseFloat(booking.amount).toLocaleString()}
                           </Typography>
                         </Box>
@@ -304,15 +422,29 @@ const ActiveBookingsPage = () => {
                       {/* Timing Info */}
                       <Box sx={{ mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                          <ScheduleIcon sx={{ color: theme.palette.info.main, fontSize: '1.2rem' }} />
-                          <Typography variant="caption" color="text.secondary">
+                          <ScheduleIcon sx={{ 
+                            color: theme.palette.info.main, 
+                            fontSize: { xs: '1rem', sm: '1.2rem' } 
+                          }} />
+                          <Typography 
+                            variant="caption" 
+                            color="text.secondary"
+                            sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                          >
                             Check-in: {formatDate(booking.checkIn?.toDate())}
                           </Typography>
                         </Box>
                         {cycleEndDate && (
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <ScheduleIcon sx={{ color: isOverdue ? theme.palette.error.main : theme.palette.warning.main, fontSize: '1.2rem' }} />
-                            <Typography variant="caption" color={isOverdue ? "error" : "text.secondary"}>
+                            <ScheduleIcon sx={{ 
+                              color: isOverdue ? theme.palette.error.main : theme.palette.warning.main, 
+                              fontSize: { xs: '1rem', sm: '1.2rem' } 
+                            }} />
+                            <Typography 
+                              variant="caption" 
+                              color={isOverdue ? "error" : "text.secondary"}
+                              sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                            >
                               Cycle ends: {formatDate(cycleEndDate)}
                             </Typography>
                           </Box>
@@ -326,18 +458,32 @@ const ActiveBookingsPage = () => {
                         sx={{
                           bgcolor: theme.palette.info.light + '30',
                           color: theme.palette.info.main,
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          height: { xs: 24, sm: 28 },
+                          alignSelf: 'flex-start'
                         }}
                       />
                     </CardContent>
 
-                    <CardActions sx={{ p: 2, pt: 0, justifyContent: 'flex-end', gap: 1 }}>
+                    <CardActions sx={{ 
+                      p: { xs: 1.5, sm: 2 }, 
+                      pt: 0, 
+                      justifyContent: 'flex-end', 
+                      gap: { xs: 0.5, sm: 1 },
+                      flexWrap: 'wrap'
+                    }}>
                       {isOverdue ? (
                         <>
                           <Button
                             size="small"
                             variant="outlined"
                             onClick={() => handleAlreadyCheckout(booking.id, booking.roomId, cycleEndDate)}
-                            sx={{ textTransform: 'none', borderRadius: 2 }}
+                            sx={{ 
+                              textTransform: 'none', 
+                              borderRadius: 2,
+                              fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                              px: { xs: 1, sm: 2 }
+                            }}
                           >
                             Already Left
                           </Button>
@@ -346,7 +492,12 @@ const ActiveBookingsPage = () => {
                             variant="contained"
                             startIcon={<ExtendIcon />}
                             onClick={() => handleOpenExtendDialog(booking)}
-                            sx={{ textTransform: 'none', borderRadius: 2 }}
+                            sx={{ 
+                              textTransform: 'none', 
+                              borderRadius: 2,
+                              fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                              px: { xs: 1, sm: 2 }
+                            }}
                           >
                             Extend
                           </Button>
@@ -357,7 +508,12 @@ const ActiveBookingsPage = () => {
                           variant="contained"
                           startIcon={<CheckoutIcon />}
                           onClick={() => handleCheckout(booking.id, booking.roomId)}
-                          sx={{ textTransform: 'none', borderRadius: 2 }}
+                          sx={{ 
+                            textTransform: 'none', 
+                            borderRadius: 2,
+                            fontSize: { xs: '0.7rem', sm: '0.875rem' },
+                            px: { xs: 1, sm: 2 }
+                          }}
                         >
                           Checkout
                         </Button>
@@ -372,18 +528,34 @@ const ActiveBookingsPage = () => {
       ) : (
         <Paper
           sx={{
-            p: 6,
+            p: { xs: 4, sm: 5, md: 6 },
             textAlign: 'center',
             borderRadius: 3,
             bgcolor: theme.palette.grey[50],
             border: `2px dashed ${theme.palette.grey[300]}`,
           }}
         >
-          <ActiveIcon sx={{ fontSize: 64, color: theme.palette.grey[400], mb: 2 }} />
-          <Typography variant="h5" sx={{ fontWeight: 600, mb: 1, color: theme.palette.text.secondary }}>
+          <ActiveIcon sx={{ 
+            fontSize: { xs: 48, sm: 56, md: 64 }, 
+            color: theme.palette.grey[400], 
+            mb: 2 
+          }} />
+          <Typography 
+            variant="h5" 
+            sx={{ 
+              fontWeight: 600, 
+              mb: 1, 
+              color: theme.palette.text.secondary,
+              fontSize: { xs: '1.25rem', sm: '1.5rem' }
+            }}
+          >
             No Active Bookings
           </Typography>
-          <Typography variant="body1" color="text.secondary">
+          <Typography 
+            variant="body1" 
+            color="text.secondary"
+            sx={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
+          >
             All rooms are currently available. New bookings will appear here.
           </Typography>
         </Paper>
@@ -394,14 +566,33 @@ const ActiveBookingsPage = () => {
         open={extendDialog.open}
         onClose={handleCloseExtendDialog}
         PaperProps={{
-          sx: { borderRadius: 3, p: 1 }
+          sx: { 
+            borderRadius: 3, 
+            p: 1,
+            mx: { xs: 2, sm: 0 },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' }
+          }
         }}
+        fullWidth
+        maxWidth="sm"
       >
-        <DialogTitle sx={{ fontWeight: 600 }}>
+        <DialogTitle sx={{ 
+          fontWeight: 600,
+          fontSize: { xs: '1.1rem', sm: '1.25rem' },
+          textAlign: { xs: 'center', sm: 'left' }
+        }}>
           Extend Stay - Room {extendDialog.booking?.roomNo}
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ 
+              mb: 2,
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
+              textAlign: { xs: 'center', sm: 'left' }
+            }}
+          >
             Enter the amount for the extended booking period for {extendDialog.booking?.guestName}.
           </Typography>
           <TextField
@@ -411,16 +602,35 @@ const ActiveBookingsPage = () => {
             value={extendAmount}
             onChange={(e) => setExtendAmount(e.target.value)}
             sx={{ mt: 1 }}
+            size={isMobile ? "medium" : "medium"}
           />
         </DialogContent>
-        <DialogActions sx={{ p: 3, pt: 1 }}>
-          <Button onClick={handleCloseExtendDialog} sx={{ textTransform: 'none', borderRadius: 2 }}>
+        <DialogActions sx={{ 
+          p: { xs: 2, sm: 3 }, 
+          pt: 1,
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: { xs: 1, sm: 0 }
+        }}>
+          <Button 
+            onClick={handleCloseExtendDialog} 
+            sx={{ 
+              textTransform: 'none', 
+              borderRadius: 2,
+              order: { xs: 2, sm: 1 }
+            }}
+            fullWidth={isMobile}
+          >
             Cancel
           </Button>
           <Button
             onClick={handleExtendStay}
             variant="contained"
-            sx={{ textTransform: 'none', borderRadius: 2 }}
+            sx={{ 
+              textTransform: 'none', 
+              borderRadius: 2,
+              order: { xs: 1, sm: 2 }
+            }}
+            fullWidth={isMobile}
           >
             Extend Stay
           </Button>

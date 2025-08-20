@@ -22,15 +22,9 @@ function App() {
       <IntroAnimation>
         <Router>
           <div style={styles.appContainer}>
-            {/* The SideNavbar is outside the Routes, so it's always visible */}
             <SideNavbar />
-
-            {/* The main content area where pages will be rendered */}
             <main style={styles.mainContent}>
               <Routes>
-                {/* Add a default route to redirect to the home page */}
-    
-                
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/rooms" element={<RoomsPage />} />
                 <Route path="/booking" element={<BookingPage />} />
@@ -45,7 +39,6 @@ function App() {
   );
 }
 
-// --- Styles for the layout ---
 const styles = {
   appContainer: {
     display: 'flex',
@@ -54,12 +47,12 @@ const styles = {
     backgroundColor: '#f1f5f9',
   },
   mainContent: {
-    flex: 1, // Takes up the remaining space
+    flex: 1,
     padding: 0,
     backgroundColor: '#f1f5f9',
     overflow: 'auto',
-    marginLeft: { xs: 0, md: '280px' },
-    transition: 'margin-left 0.3s ease',
+    width: '100%',
+    minHeight: '100vh',
   },
 };
 
