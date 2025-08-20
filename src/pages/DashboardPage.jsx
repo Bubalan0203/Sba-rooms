@@ -24,7 +24,6 @@ import {
   FaHotel,
   FaChartLine,
   FaCalendarAlt,
-  FaTrendUp,
   FaUsers,
   FaBed
 } from "react-icons/fa";
@@ -188,7 +187,7 @@ const KPICardComponent = ({ title, value, icon, trend, gradient }) => {
         <div className="kpi-title">{title}</div>
         {trend && (
           <div className="kpi-trend">
-            <FaTrendUp size={12} />
+            <FaUsers size={12} />
             {trend}
           </div>
         )}
@@ -703,86 +702,4 @@ const DashboardPage = () => {
 };
 
 export default DashboardPage;
-            title="Total Revenue"
-            value={`₹${totalRevenue.toLocaleString()}`}
-            icon="💰"
-            trend="+12%"
-          />
-        </div>
-        <div className="col-md-4">
-          <KPICard
-            title="Total Bookings"
-            value={totalBookings}
-            icon="🏨"
-            trend="+8%"
-          />
-        </div>
-        <div className="col-md-4">
-          <KPICard
-            title="Avg. Daily Rate"
-            value={`₹${averageDailyRate.toFixed(2)}`}
-            icon="📈"
-            trend="+15%"
-          />
-        </div>
-      </div>
-
-      {/* Charts */}
-      <div className="row mb-4">
-        <div className="col-lg-7 mb-3">
-          <div className="card">
-            <div className="card-body">
-              <h5>Revenue Trend</h5>
-              <Line data={lineChartData} />
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-5 mb-3">
-          <div className="card">
-            <div className="card-body">
-              <h5>Bookings by Room</h5>
-              <Bar data={barChartData} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="card">
-        <div className="card-body">
-          <h5>Room Performance</h5>
-          <table className="table table-striped mt-3">
-            <thead>
-              <tr>
-                <th>Room No.</th>
-                <th>Bookings</th>
-                <th>Revenue</th>
-                <th>Avg. Daily Rate</th>
-              </tr>
-            </thead>
-            <tbody>
-              {performanceByRoom.length > 0 ? (
-                performanceByRoom.map((room) => (
-                  <tr key={room.roomNo}>
-                    <td>Room {room.roomNo}</td>
-                    <td>{room.totalBookings}</td>
-                    <td>₹{room.totalRevenue.toLocaleString()}</td>
-                    <td>₹{room.averageDailyRate.toFixed(2)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="4" className="text-center">
-                    No data for selected period
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default DashboardPage;
+           
