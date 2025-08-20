@@ -248,7 +248,7 @@ function BookingPage() {
 
       {/* Quick Stats */}
       <Row className="mb-4">
-        <Col md={4}>
+        <Col md={6}>
           <StyledCard className="text-center">
             <div className="card-body">
               <FaBed size={32} className="text-primary mb-2" />
@@ -257,21 +257,12 @@ function BookingPage() {
             </div>
           </StyledCard>
         </Col>
-        <Col md={4}>
-          <StyledCard className="text-center">
-            <div className="card-body">
-              <FaUser size={32} className="text-success mb-2" />
-              <h5>0</h5>
-              <small className="text-muted">Pending Bookings</small>
-            </div>
-          </StyledCard>
-        </Col>
-        <Col md={4}>
+        <Col md={6}>
           <StyledCard className="text-center">
             <div className="card-body">
               <FaCheck size={32} className="text-info mb-2" />
-              <h5>Quick</h5>
-              <small className="text-muted">Booking Process</small>
+              <h5>2</h5>
+              <small className="text-muted">Active Bookings</small>
             </div>
           </StyledCard>
         </Col>

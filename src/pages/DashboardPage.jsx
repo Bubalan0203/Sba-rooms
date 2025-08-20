@@ -417,7 +417,7 @@ const DashboardPage = () => {
                 Dashboard
               </h1>
               <p className="mb-0">
-                Key performance metrics for {MONTHS[selectedMonth]} {selectedYear}
+                Statistics for {MONTHS[selectedMonth]} {selectedYear}
               </p>
             </Col>
             <Col lg={4} className="mt-3 mt-lg-0">
