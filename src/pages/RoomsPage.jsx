@@ -39,17 +39,6 @@ function RoomsPage() {
   const [roomToDelete, setRoomToDelete] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  // Modal states for alerts
-  const [alertModal, setAlertModal] = useState({ show: false, title: '', message: '', type: 'info' });
-
-  const showAlert = (title, message, type = 'info') => {
-    setAlertModal({ show: true, title, message, type });
-  };
-
-  const closeAlert = () => {
-    setAlertModal({ show: false, title: '', message: '', type: 'info' });
-  };
-
   // Firestore rooms collection
   const roomsCollection = collection(db, "rooms");
 
@@ -75,33 +64,24 @@ function RoomsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!roomNo.trim()) {
-      showAlert('Validation Error', 'Please enter a room number.', 'warning');
-      return;
-    }
+    if (!roomNo.trim()) return;
 
-    try {
-      if (editId) {
-        const roomRef = doc(db, "rooms", editId);
-        await updateDoc(roomRef, {
-          roomNo,
-          roomType,
-          updatedAt: serverTimestamp()
-        });
-        showAlert('Success', 'Room updated successfully!', 'success');
-      } else {
-        await addDoc(roomsCollection, {
-          roomNo,
-          roomType,
-          status: "Available",
-          createdAt: serverTimestamp()
-        });
-        showAlert('Success', 'Room added successfully!', 'success');
-      }
-      resetForm();
-    } catch (error) {
-      showAlert('Error', 'Failed to save room. Please try again.', 'error');
+    if (editId) {
+      const roomRef = doc(db, "rooms", editId);
+      await updateDoc(roomRef, {
+        roomNo,
+        roomType,
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      await addDoc(roomsCollection, {
+        roomNo,
+        roomType,
+        status: "Available",
+        createdAt: serverTimestamp()
+      });
     }
+    resetForm();
   };
 
   const handleEdit = (room) => {
@@ -124,12 +104,7 @@ function RoomsPage() {
 
   const confirmDelete = async () => {
     if (roomToDelete) {
-      try {
-        await deleteDoc(doc(db, "rooms", roomToDelete));
-        showAlert('Success', 'Room deleted successfully!', 'success');
-      } catch (error) {
-        showAlert('Error', 'Failed to delete room. Please try again.', 'error');
-      }
+      await deleteDoc(doc(db, "rooms", roomToDelete));
     }
     handleCloseDeleteModal();
   };
@@ -308,28 +283,6 @@ function RoomsPage() {
             <ActionButton variant="danger" onClick={confirmDelete}>
               <FaTrash className="me-2" />
               Delete Room
-            </ActionButton>
-          </Modal.Footer>
-        </Modal>
-      </ModalStyled>
-
-      {/* Alert Modal */}
-      <ModalStyled>
-        <Modal show={alertModal.show} onHide={closeAlert} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>
-              {alertModal.type === 'error' && '⚠️ Error'}
-              {alertModal.type === 'warning' && '⚠️ Warning'}
-              {alertModal.type === 'info' && 'ℹ️ Information'}
-              {alertModal.type === 'success' && '✅ Success'}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p className="mb-0">{alertModal.message}</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <ActionButton variant="primary" onClick={closeAlert}>
-              OK
             </ActionButton>
           </Modal.Footer>
         </Modal>

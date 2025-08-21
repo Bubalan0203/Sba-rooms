@@ -55,22 +55,11 @@ function BookingPage() {
   const [idProofBase64, setIdProofBase64] = useState("");
   const [showImageOptions, setShowImageOptions] = useState(false);
 
-  // Modal states for alerts
-  const [alertModal, setAlertModal] = useState({ show: false, title: '', message: '', type: 'info' });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Validation errors
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
-
-  const showAlert = (title, message, type = 'info') => {
-    setAlertModal({ show: true, title, message, type });
-  };
-
-  const closeAlert = () => {
-    setAlertModal({ show: false, title: '', message: '', type: 'info' });
-  };
 
   const steps = ["Select Rooms", "Guest & Payment Details", "Review & Confirm"];
 
@@ -159,7 +148,7 @@ function BookingPage() {
   };
   const handleNext = () => {
     if (step === 0 && selectedRooms.length !== parseInt(numRooms, 10)) {
-      showAlert('Selection Required', `Please select exactly ${numRooms} room(s).`, 'warning');
+      alert(`Please select exactly ${numRooms} room(s).`);
       return;
     }
     if (step === 1) {
@@ -170,7 +159,7 @@ function BookingPage() {
         setNameError(nameErr);
         setPhoneError(phoneErr);
         if (!idProofBase64) {
-          showAlert('ID Proof Required', 'Please upload ID proof to continue.', 'warning');
+          alert("Please upload ID proof");
         }
         return;
       }
@@ -210,22 +199,20 @@ function BookingPage() {
   const handleCommonAmountChange = (e) => {
     const newAmount = e.target.value.replace(/\D/g, ''); // Only allow digits
     setCommonAmount(newAmount);
-    
     // Update all selected rooms with the common amount
-    setRoomDetails((prevDetails) => {
-      const newDetails = { ...prevDetails };
-      selectedRooms.forEach((roomId) => {
-        if (!newDetails[roomId]) {
-          newDetails[roomId] = { numberOfPersons: "1", amount: newAmount };
-        } else {
+    if (selectedRooms.length > 0) {
+      setRoomDetails((prevDetails) => {
+        const newDetails = { ...prevDetails };
+        selectedRooms.forEach((roomId) => {
           newDetails[roomId] = { 
             ...newDetails[roomId], 
-            amount: newAmount
+            amount: newAmount,
+            numberOfPersons: newDetails[roomId]?.numberOfPersons || "1"
           };
-        }
+        });
+        return newDetails;
       });
-      return newDetails;
-    });
+    }
   };
 
   const handleFileChange = (e, isCamera = false) => {
@@ -238,7 +225,7 @@ function BookingPage() {
       };
       reader.readAsDataURL(file);
     } else if (file) {
-      showAlert('Invalid File', 'Please select a valid image file (JPG, PNG, JPEG)', 'error');
+      alert("Please select a valid image file (JPG, PNG, JPEG)");
     }
   };
 
@@ -269,7 +256,7 @@ function BookingPage() {
       setNameError(nameErr);
       setPhoneError(phoneErr);
       if (!idProofBase64) {
-        showAlert('Missing Information', 'Please upload ID proof to complete the booking.', 'warning');
+        alert("Please upload ID proof");
       }
       return;
     }
@@ -315,7 +302,7 @@ function BookingPage() {
       setSuccessModalOpen(true);
       handleCloseModal();
     } catch (error) {
-      showAlert('Booking Failed', 'The selected room(s) might have just been booked by another user. Please try again.', 'error');
+      alert("Booking failed! The selected room(s) might have just been booked.");
       console.error("Transaction failed: ", error);
       setIsSubmitting(false);
     }
@@ -777,28 +764,6 @@ function BookingPage() {
               Continue
             </ActionButton>
           </Modal.Body>
-        </Modal>
-      </ModalStyled>
-
-      {/* Alert Modal */}
-      <ModalStyled>
-        <Modal show={alertModal.show} onHide={closeAlert} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>
-              {alertModal.type === 'error' && '⚠️ Error'}
-              {alertModal.type === 'warning' && '⚠️ Warning'}
-              {alertModal.type === 'info' && 'ℹ️ Information'}
-              {alertModal.type === 'success' && '✅ Success'}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p className="mb-0">{alertModal.message}</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <ActionButton variant="primary" onClick={closeAlert}>
-              OK
-            </ActionButton>
-          </Modal.Footer>
         </Modal>
       </ModalStyled>
     </StyledContainer>

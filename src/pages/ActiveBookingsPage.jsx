@@ -35,26 +35,6 @@ const ActiveBookingsPage = () => {
   const [extendDialog, setExtendDialog] = useState({ open: false, booking: null });
   const [extendAmount, setExtendAmount] = useState('');
 
-  // Modal states for alerts
-  const [alertModal, setAlertModal] = useState({ show: false, title: '', message: '', type: 'info' });
-  const [confirmModal, setConfirmModal] = useState({ show: false, title: '', message: '', onConfirm: null });
-
-  const showAlert = (title, message, type = 'info') => {
-    setAlertModal({ show: true, title, message, type });
-  };
-
-  const closeAlert = () => {
-    setAlertModal({ show: false, title: '', message: '', type: 'info' });
-  };
-
-  const showConfirm = (title, message, onConfirm) => {
-    setConfirmModal({ show: true, title, message, onConfirm });
-  };
-
-  const closeConfirm = () => {
-    setConfirmModal({ show: false, title: '', message: '', onConfirm: null });
-  };
-
   useEffect(() => {
     const bookingsCollection = collection(db, "bookings");
     const unsubBookings = onSnapshot(bookingsCollection, (snapshot) => {
@@ -93,41 +73,19 @@ const ActiveBookingsPage = () => {
   };
 
   const handleCheckout = async (bookingId, roomId) => {
-    showConfirm(
-      'Confirm Checkout',
-      'Are you sure you want to check out this guest?',
-      async () => {
-        try {
-          const bookingRef = doc(db, "bookings", bookingId);
-          const roomRef = doc(db, "rooms", roomId);
-          await updateDoc(bookingRef, { checkOut: serverTimestamp(), status: 'Completed' });
-          await updateDoc(roomRef, { status: 'Available' });
-          showAlert('Success', 'Guest has been checked out successfully.', 'success');
-        } catch (error) {
-          showAlert('Error', 'Failed to check out guest. Please try again.', 'error');
-        }
-        closeConfirm();
-      }
-    );
+    if (!window.confirm("Are you sure you want to check out this guest?")) return;
+    const bookingRef = doc(db, "bookings", bookingId);
+    const roomRef = doc(db, "rooms", roomId);
+    await updateDoc(bookingRef, { checkOut: serverTimestamp(), status: 'Completed' });
+    await updateDoc(roomRef, { status: 'Available' });
   };
 
   const handleAlreadyCheckout = async (bookingId, roomId, cycleEndDate) => {
-    showConfirm(
-      'Mark as Already Left',
-      'Mark this guest as checked out at the cycle end time?',
-      async () => {
-        try {
-          const bookingRef = doc(db, "bookings", bookingId);
-          const roomRef = doc(db, "rooms", roomId);
-          await updateDoc(bookingRef, { checkOut: Timestamp.fromDate(cycleEndDate), status: 'Completed' });
-          await updateDoc(roomRef, { status: 'Available' });
-          showAlert('Success', 'Guest has been marked as checked out.', 'success');
-        } catch (error) {
-          showAlert('Error', 'Failed to update booking status. Please try again.', 'error');
-        }
-        closeConfirm();
-      }
-    );
+    if (!window.confirm("Mark this guest as checked out at the cycle end time?")) return;
+    const bookingRef = doc(db, "bookings", bookingId);
+    const roomRef = doc(db, "rooms", roomId);
+    await updateDoc(bookingRef, { checkOut: Timestamp.fromDate(cycleEndDate), status: 'Completed' });
+    await updateDoc(roomRef, { status: 'Available' });
   };
 
   const handleOpenExtendDialog = (booking) => {
@@ -145,7 +103,7 @@ const ActiveBookingsPage = () => {
     const newAmount = parseFloat(extendAmount);
     
     if (isNaN(newAmount) || newAmount <= 0) {
-      showAlert('Invalid Amount', 'Please enter a valid amount for extension.', 'error');
+      alert("Invalid amount. Extension cancelled.");
       return;
     }
 
@@ -168,11 +126,11 @@ const ActiveBookingsPage = () => {
           createdAt: serverTimestamp()
         });
       });
-      showAlert('Success', `Stay for Room ${booking.roomNo} has been successfully extended.`, 'success');
+      alert(`Stay for Room ${booking.roomNo} has been successfully extended.`);
       handleCloseExtendDialog();
     } catch (error) {
       console.error("Extension transaction failed: ", error);
-      showAlert('Error', 'Failed to extend stay. Please try again.', 'error');
+      alert("Failed to extend stay. Please try again.");
     }
   };
 
@@ -355,57 +313,6 @@ const ActiveBookingsPage = () => {
             </div>
           </div>
         )}
-      </ModalStyled>
-
-      {/* Alert Modal */}
-      <ModalStyled>
-        <Modal show={alertModal.show} onHide={closeAlert} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>
-              {alertModal.type === 'error' && '⚠️ Error'}
-              {alertModal.type === 'warning' && '⚠️ Warning'}
-              {alertModal.type === 'info' && 'ℹ️ Information'}
-              {alertModal.type === 'success' && '✅ Success'}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p className="mb-0">{alertModal.message}</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <ActionButton variant="primary" onClick={closeAlert}>
-              OK
-            </ActionButton>
-          </Modal.Footer>
-        </Modal>
-      </ModalStyled>
-
-      {/* Confirmation Modal */}
-      <ModalStyled>
-        <Modal show={confirmModal.show} onHide={closeConfirm} centered>
-          <Modal.Header closeButton>
-            <Modal.Title>
-              ❓ {confirmModal.title}
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <p className="mb-0">{confirmModal.message}</p>
-          </Modal.Body>
-          <Modal.Footer>
-            <ActionButton variant="secondary" onClick={closeConfirm}>
-              Cancel
-            </ActionButton>
-            <ActionButton 
-              variant="primary" 
-              onClick={() => {
-                if (confirmModal.onConfirm) {
-                  confirmModal.onConfirm();
-                }
-              }}
-            >
-              Confirm
-            </ActionButton>
-          </Modal.Footer>
-        </Modal>
       </ModalStyled>
     </StyledContainer>
   );
