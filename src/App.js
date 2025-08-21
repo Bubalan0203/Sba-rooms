@@ -43,6 +43,10 @@ function App() {
 
   const handleOpeningComplete = () => {
     setShowOpening(false);
+    // Small delay to ensure smooth transition
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
   };
 
   // Simulate page loading
@@ -51,7 +55,7 @@ function App() {
       setIsLoading(true);
       const timer = setTimeout(() => {
         setIsLoading(false);
-      }, 800);
+      }, 1200);
       return () => clearTimeout(timer);
     };
 
@@ -59,15 +63,17 @@ function App() {
     const currentPath = window.location.pathname;
     setCurrentPage(currentPath);
     
-    return handleRouteChange();
+    if (!showOpening) {
+      return handleRouteChange();
+    }
   }, []);
 
   if (showOpening) {
-    return <OpeningAnimation onComplete={handleOpeningComplete} duration={3500} />;
+    return <OpeningAnimation onComplete={handleOpeningComplete} duration={4000} />;
   }
 
   if (isLoading) {
-    return <LoadingAnimation text="Loading page..." />;
+    return <LoadingAnimation text="Loading..." />;
   }
 
   return (
