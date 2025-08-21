@@ -3,45 +3,21 @@ import styled, { keyframes } from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBed } from 'react-icons/fa';
 
-const slideUp = keyframes`
-  from {
-    transform: translateY(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-`;
-
-const slideDown = keyframes`
-  from {
-    transform: translateY(-100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-`;
-
-const scaleIn = keyframes`
-  from {
-    transform: scale(0) rotate(-180deg);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
-  }
-`;
-
 const shimmer = keyframes`
   0% {
     background-position: -200% center;
   }
   100% {
     background-position: 200% center;
+  }
+`;
+
+const float = keyframes`
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
   }
 `;
 
@@ -61,7 +37,7 @@ const OpeningContainer = styled(motion.div)`
   overflow: hidden;
 `;
 
-const BackgroundPattern = styled.div`
+const BackgroundPattern = styled(motion.div)`
   position: absolute;
   top: 0;
   left: 0;
@@ -70,7 +46,6 @@ const BackgroundPattern = styled.div`
   background-image: 
     radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-  animation: ${slideDown} 2s ease-out;
 `;
 
 const LogoContainer = styled(motion.div)`
@@ -92,6 +67,7 @@ const LogoIcon = styled(motion.div)`
   border: 4px solid rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(10px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: ${float} 3s ease-in-out infinite;
 `;
 
 const BrandText = styled(motion.h1)`
@@ -146,43 +122,45 @@ const OpeningAnimation = ({ onComplete, duration = 3000 }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShow(false);
-      setTimeout(onComplete, 500); // Wait for exit animation
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [onComplete, duration]);
+  }, [duration]);
+
+  const handleExitComplete = () => {
+    if (onComplete) {
+      onComplete();
+    }
+  };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={handleExitComplete}>
       {show && (
         <OpeningContainer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.1 }}
-          transition={{ duration: 0.5 }}
+          exit={{ 
+            opacity: 0, 
+            scale: 1.1,
+            transition: { duration: 0.8, ease: "easeInOut" }
+          }}
         >
-          <BackgroundPattern />
+          <BackgroundPattern
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+          />
           
-          <LogoContainer
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ 
-              duration: 1.2, 
-              ease: "easeOut",
-              type: "spring",
-              stiffness: 100
-            }}
-          >
+          <LogoContainer>
             <LogoIcon
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
               transition={{ 
-                duration: 0.8, 
-                delay: 0.3,
+                duration: 1.2, 
+                ease: "easeOut",
                 type: "spring",
-                stiffness: 200
+                stiffness: 100
               }}
-              whileHover={{ scale: 1.05 }}
             >
               <FaBed size={50} color="white" />
             </LogoIcon>

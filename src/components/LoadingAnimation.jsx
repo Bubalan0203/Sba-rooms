@@ -1,5 +1,6 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
+import { motion } from 'framer-motion';
 import { FaBed } from 'react-icons/fa';
 
 const slideAnimation = keyframes`
@@ -30,7 +31,7 @@ const scaleIn = keyframes`
   }
 `;
 
-const LoadingContainer = styled.div`
+const LoadingContainer = styled(motion.div)`
   position: fixed;
   top: 0;
   left: 0;
@@ -108,9 +109,17 @@ const LoadingText = styled.p`
   animation: ${fadeInUp} 1s ease-out 1s both;
 `;
 
-const LoadingAnimation = ({ text = "Loading..." }) => {
+const LoadingAnimation = ({ text = "Loading...", onComplete }) => {
   return (
-    <LoadingContainer>
+    <LoadingContainer
+      initial={{ opacity: 1 }}
+      exit={{ 
+        opacity: 0,
+        scale: 1.1,
+        transition: { duration: 0.5, ease: "easeInOut" }
+      }}
+      onAnimationComplete={onComplete}
+    >
       <LogoContainer>
         <LogoIcon>
           <FaBed size={40} color="white" />
