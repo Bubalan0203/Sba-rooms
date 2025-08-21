@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import LoadingAnimation from "../components/LoadingAnimation";
 import { db } from "../config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import jsPDF from "jspdf";
@@ -186,12 +187,7 @@ const AllBookingsPage = () => {
 
   if (loading) {
     return (
-      <StyledContainer fluid>
-        <LoadingSpinner>
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Loading booking history...</p>
-        </LoadingSpinner>
-      </StyledContainer>
+      <LoadingAnimation text="Loading booking history..." />
     );
   }
 

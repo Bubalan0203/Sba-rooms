@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import LoadingAnimation from "../components/LoadingAnimation";
 import { db } from "../config/firebase";
 import {
   collection,
@@ -198,13 +199,20 @@ function BookingPage() {
   const handleCommonAmountChange = (e) => {
     const newAmount = e.target.value.replace(/\D/g, ''); // Only allow digits
     setCommonAmount(newAmount);
-    setRoomDetails((prevDetails) => {
-      const newDetails = { ...prevDetails };
-      selectedRooms.forEach((roomId) => {
-        newDetails[roomId] = { ...newDetails[roomId], amount: newAmount };
+    // Update all selected rooms with the common amount
+    if (selectedRooms.length > 0) {
+      setRoomDetails((prevDetails) => {
+        const newDetails = { ...prevDetails };
+        selectedRooms.forEach((roomId) => {
+          newDetails[roomId] = { 
+            ...newDetails[roomId], 
+            amount: newAmount,
+            numberOfPersons: newDetails[roomId]?.numberOfPersons || "1"
+          };
+        });
+        return newDetails;
       });
-      return newDetails;
-    });
+    }
   };
 
   const handleFileChange = (e, isCamera = false) => {
@@ -309,12 +317,7 @@ function BookingPage() {
 
   if (loading) {
     return (
-      <StyledContainer fluid>
-        <LoadingSpinner>
-          <ProgressBar animated now={60} style={{ maxWidth: 400, margin: "auto" }} />
-          <p className="mt-3 text-muted">Loading available rooms...</p>
-        </LoadingSpinner>
-      </StyledContainer>
+      <LoadingAnimation text="Loading available rooms..." />
     );
   }
 

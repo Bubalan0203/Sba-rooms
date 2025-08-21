@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
+import LoadingAnimation from "../components/LoadingAnimation";
 import { db } from "../config/firebase";
 import { collection, onSnapshot } from "firebase/firestore";
 import { Container, Row, Col, Card, Spinner } from "react-bootstrap";
@@ -397,12 +398,7 @@ const DashboardPage = () => {
 
   if (loading) {
     return (
-      <DashboardContainer>
-        <LoadingSpinner>
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Loading dashboard...</p>
-        </LoadingSpinner>
-      </DashboardContainer>
+      <LoadingAnimation text="Loading dashboard..." />
     );
   }
 

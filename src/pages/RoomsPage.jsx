@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import LoadingAnimation from "../components/LoadingAnimation";
 import { db } from "../config/firebase";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
 import {
@@ -122,12 +123,7 @@ function RoomsPage() {
 
   if (loading) {
     return (
-      <StyledContainer fluid>
-        <LoadingSpinner>
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Loading rooms...</p>
-        </LoadingSpinner>
-      </StyledContainer>
+      <LoadingAnimation text="Loading rooms..." />
     );
   }
 

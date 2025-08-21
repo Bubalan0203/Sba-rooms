@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
 import RoomsPage from "./pages/RoomsPage";
@@ -7,6 +8,8 @@ import AllBookingsPage from "./pages/AllBookingsPage";
 import ActiveBookingsPage from "./pages/ActiveBookingsPage";
 import DashboardPage from "./pages/DashboardPage";
 import SideNavbar from "./pages/SideNavbar";
+import OpeningAnimation from "./components/OpeningAnimation";
+import LoadingAnimation from "./components/LoadingAnimation";
 
 const AppContainer = styled.div`
   display: flex;
@@ -34,6 +37,39 @@ const MainContent = styled.div`
 `;
 
 function App() {
+  const [showOpening, setShowOpening] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState('');
+
+  const handleOpeningComplete = () => {
+    setShowOpening(false);
+  };
+
+  // Simulate page loading
+  useEffect(() => {
+    const handleRouteChange = () => {
+      setIsLoading(true);
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 800);
+      return () => clearTimeout(timer);
+    };
+
+    // Listen for route changes
+    const currentPath = window.location.pathname;
+    setCurrentPage(currentPath);
+    
+    return handleRouteChange();
+  }, []);
+
+  if (showOpening) {
+    return <OpeningAnimation onComplete={handleOpeningComplete} duration={3500} />;
+  }
+
+  if (isLoading) {
+    return <LoadingAnimation text="Loading page..." />;
+  }
+
   return (
     <Router>
       <AppContainer>

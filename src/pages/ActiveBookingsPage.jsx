@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import LoadingAnimation from "../components/LoadingAnimation";
 import { db } from "../config/firebase";
 import { collection, onSnapshot, updateDoc, doc, runTransaction, serverTimestamp, Timestamp } from "firebase/firestore";
 import { Container, Row, Col, Spinner } from "react-bootstrap";
@@ -137,12 +138,7 @@ const ActiveBookingsPage = () => {
 
   if (loading) {
     return (
-      <StyledContainer fluid>
-        <LoadingSpinner>
-          <Spinner animation="border" variant="primary" />
-          <p className="mt-3 text-muted">Loading active bookings...</p>
-        </LoadingSpinner>
-      </StyledContainer>
+      <LoadingAnimation text="Loading active bookings..." />
     );
   }
 
