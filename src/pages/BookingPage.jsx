@@ -34,7 +34,7 @@ import {
   FormCard
 } from "../components/StyledComponents";
 import { FaBook, FaBed, FaUser, FaCreditCard, FaCheck, FaPlus, FaCamera, FaImage, FaCheckCircle } from "react-icons/fa";
-
+import imageCompression from "browser-image-compression";
 function BookingPage() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -215,19 +215,29 @@ function BookingPage() {
     }
   };
 
-  const handleFileChange = (e, isCamera = false) => {
-    const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
+const handleFileChange = async (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    try {
+      const options = {
+        maxSizeMB: 0.5,        // target file size (0.5 MB)
+        maxWidthOrHeight: 800, // resize if needed
+        useWebWorker: true,
+      };
+      const compressedFile = await imageCompression(file, options);
+
+      // Convert to base64
       const reader = new FileReader();
+      reader.readAsDataURL(compressedFile);
       reader.onloadend = () => {
         setIdProofBase64(reader.result);
         setShowImageOptions(false);
       };
-      reader.readAsDataURL(file);
-    } else if (file) {
-      alert("Please select a valid image file (JPG, PNG, JPEG)");
+    } catch (error) {
+      console.error("Error compressing image:", error);
     }
-  };
+  }
+};
 
   const handleCameraCapture = () => {
     const input = document.createElement('input');
